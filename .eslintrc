@@ -1,0 +1,24 @@
+{
+    "extends": [
+      "eslint:recommended",
+      "airbnb"
+    ],
+    "rules": {
+      "semi": [1, "never"],
+      "max-len": 1,
+      "ecmaVersion": 2017,
+      "ecmaFeatures": {
+          "experimentalObjectRestSpread": true
+      },
+      "linebreak-style": 0,
+    },
+    "globals": {
+      "shallow": true,
+      "render": true,
+      "mount": true,
+      "sinon": true
+    },
+    "env": {
+      "browser": false
+    }
+  }
