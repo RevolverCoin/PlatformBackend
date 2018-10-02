@@ -17,7 +17,7 @@ const {
 } = require('./config');
 
 mongoose.connect(MONGO_URL);
-require('./core/auth/passport')(passport);
+require('./auth/passport')(passport);
 
 const whitelist = ['http://localhost:3000']
 var corsOptions = {
@@ -51,7 +51,7 @@ app.use(passport.session()); // persistent login sessions
 app.use(flash()); // use connect-flash for flash messages stored in session
 
 // routes ======================================================================
-require('./core/api/index')(app, passport); // load our routes and pass in our app and fully configured passport
+require('./api/index')(app, passport); // load our routes and pass in our app and fully configured passport
 
 // launch ======================================================================
 app.listen(PORT);

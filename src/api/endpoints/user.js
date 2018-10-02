@@ -1,7 +1,7 @@
 const express = require('express')
 const mongoose = require('mongoose')
 
-const User = require('../../../models/user')
+const User = require('../../models/user')
 const { isLoggedIn, cleanObject } = require('../../utils/utils')
 
 const postRoutes = express.Router()
@@ -13,6 +13,7 @@ function prepareUsers(...users) {
     id: entry._id,
     desc: entry.desc,
     email: entry.local && entry.local.email,
+    address: entry.address,
     avatar: '',
     username: entry.username,
   }))

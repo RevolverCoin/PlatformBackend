@@ -3,7 +3,7 @@
 const express = require('express')
 const isEmpty = require('lodash/isEmpty')
 const mongoose = require('mongoose')
-const Post = require('../../../models/post')
+const Post = require('../../models/post')
 const {
   isLoggedIn
 } = require('../../utils/utils')

@@ -1,5 +1,6 @@
 const config = {
   PORT: process.env.PORT || 5445,
+  COREURL: process.env.COREURL || 'http://localhost:5447',
   REDIS_SECRET: 'very-sTrong-Secret',
   REDIS_URL: process.env.REDIS_URL || 'redis://localhost:6379',
   MONGO_URL: process.env.MONGO_URL || 'mongodb://localhost/passport',
