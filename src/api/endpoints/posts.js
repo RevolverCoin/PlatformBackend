@@ -10,7 +10,6 @@ const {
 const postRoutes = express.Router()
 
 function preparePosts(posts) {
-  console.log(posts)
   return posts.map(entry => ({
     id: entry._id,
     text: entry.text,
@@ -142,7 +141,6 @@ postRoutes.post('/post/add', isLoggedIn, (request, response) => {
     const {
       _id: userId
     } = request.user
-    console.log("USER", request.user)
 
     if (text != '') {
       const newPostData = {

@@ -3,7 +3,7 @@ const config = {
   COREURL: process.env.COREURL || 'http://localhost:5447',
   REDIS_SECRET: 'very-sTrong-Secret',
   REDIS_URL: process.env.REDIS_URL || 'redis://localhost:6379',
-  MONGO_URL: process.env.MONGO_URL || 'mongodb://localhost/passport',
+  MONGO_URL: process.env.MONGO_URL || 'mongodb://localhost/platform-backend',
   auth: {
 
     'facebookAuth': {
