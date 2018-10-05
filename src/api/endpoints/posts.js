@@ -4,6 +4,10 @@ const express = require('express')
 const isEmpty = require('lodash/isEmpty')
 const mongoose = require('mongoose')
 const Post = require('../../models/post')
+const User = require('../../models/user')
+
+const { GetSupporting } = require('../../core/core')
+
 const {
   isLoggedIn
 } = require('../../utils/utils')
@@ -223,6 +227,43 @@ postRoutes.get('/post/:postId', isLoggedIn, (request, response) => {
   }
 })
 
+postRoutes.get('/timeline', isLoggedIn, async (request, response) => {
+  try {
+
+    const userId = request.user._id
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      throw new Error('Invalid user id')
+    }
+
+    const user = await User.findById(userId)
+      .lean()
+      .exec()
+    const userAddress = user.address
+
+    // get all addresses supported by userAddress
+    let result = await GetSupporting(userAddress)
+    let supportAddresses = result.data.supports.map(item => (item.addressTo)) 
+
+    const users = await User.find({ address: { $in: supportAddresses } })
+      .lean()
+      .exec()
+
+    const userIds = users.map(user=>user._id);
+    const posts =  await Post.find({
+      userId:  { $in: userIds }
+    }).populate('userId');
+
+    response.json({
+      success: true,
+      data: posts
+    })
+  } catch (e) {
+    console.log(e)
+    response.json({success: false})
+  }
+
+})
 
 
 module.exports = postRoutes
