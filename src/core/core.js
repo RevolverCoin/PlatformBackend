@@ -2,7 +2,7 @@ const config = require('../config')
 const fetch = require('node-fetch')
 
 
-function CreateAddress(type) {
+function createAddress(type) {
     return fetch(`${config.COREURL}/address/new`, {
       method: 'POST',
       headers: {
@@ -13,7 +13,7 @@ function CreateAddress(type) {
     
 }
 
-function CreateSupport(addressFrom, addressTo) {
+function createSupport(addressFrom, addressTo) {
     return fetch(`${config.COREURL}/support`, {
       method: 'POST',
       headers: {
@@ -24,7 +24,7 @@ function CreateSupport(addressFrom, addressTo) {
     
 }
 
-function DeleteSupport(addressFrom, addressTo) {
+function deleteSupport(addressFrom, addressTo) {
   return fetch(`${config.COREURL}/support`, {
     method: 'DELETE',
     headers: {
@@ -35,7 +35,7 @@ function DeleteSupport(addressFrom, addressTo) {
   
 }
 
-function GetSupporting(address) {
+function getSupporting(address) {
   return fetch(`${config.COREURL}/address/supporting/${address}`, {
     method: 'GET',
     headers: {
@@ -44,7 +44,7 @@ function GetSupporting(address) {
   }).then(res => res.json()).catch(e=>console.log(e))
 }
 
-function GetSupported(address) {
+function getSupported(address) {
   return fetch(`${config.COREURL}/address/supported/${address}`, {
     method: 'GET',
     headers: {
@@ -54,5 +54,26 @@ function GetSupported(address) {
 }
 
 
+function getBalance(address) {
+  return (
+    fetch(`${config.COREURL}/blockchain/${address}/balance`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }))
+}
 
-module.exports = {CreateAddress, CreateSupport, DeleteSupport, GetSupporting, GetSupported};
+function send(addressFrom, addressTo, amount) {
+  return (
+    fetch(`${config.COREURL}/blockchain/send`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({addressFrom, addressTo, amount}),
+    }))
+}
+
+
+module.exports = {createAddress, createSupport, deleteSupport, getSupporting, getSupported, getBalance, send};

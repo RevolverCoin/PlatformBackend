@@ -19,7 +19,7 @@ const {
 mongoose.connect(MONGO_URL);
 require('./auth/passport')(passport);
 
-const whitelist = ['http://localhost:3000']
+const whitelist = ['http://localhost:5450']
 var corsOptions = {
   credentials: true,
   origin: function (origin, callback) {

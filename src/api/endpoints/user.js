@@ -4,7 +4,7 @@ const mongoose = require('mongoose')
 const User = require('../../models/user')
 const { isLoggedIn, cleanObject } = require('../../utils/utils')
 
-const { CreateSupport, DeleteSupport, GetSupporting, GetSupported } = require('../../core/core')
+const { createSupport, deleteSupport, getSupporting, getSupported, getBalance, send } = require('../../core/core')
 
 const postRoutes = express.Router()
 
@@ -40,10 +40,10 @@ postRoutes.get('/users/:id', isLoggedIn, async (request, response) => {
 
     const address = converted.address
 
-    let result = await GetSupporting(address)
+    let result = await getSupporting(address)
     supports.supporting = result.data.supports
 
-    result = await GetSupported(address)
+    result = await getSupported(address)
     supports.supported = result.data.supports
 
     response.json({
@@ -77,10 +77,10 @@ postRoutes.get('/address/:address', isLoggedIn, async (request, response) => {
     // get supporting/supported list for the user
     const supports = {}
 
-    let result = await GetSupporting(address)
+    let result = await getSupporting(address)
     supports.supporting = result.data.supports
 
-    result = await GetSupported(address)
+    result = await getSupported(address)
     supports.supported = result.data.supports
 
     response.json({
@@ -175,20 +175,22 @@ postRoutes.get('/info', isLoggedIn, async (request, response) => {
     // get supporting/supported list for the user
     const supports = {}
     const address = converted.address
-    let result = await GetSupporting(address)
+    let result = await getSupporting(address)
     supports.supporting = result.data.supports
 
-    result = await GetSupported(address)
+    result = await getSupported(address)
     supports.supported = result.data.supports
 
     // get balance etc
-    // ...
+    const balanceResponse = await getBalance(address)
+    const balance = await balanceResponse.json()
 
     response.json({
       success: true,
       data: {
         profile: converted,
         supports,
+        balance: balance.data
       },
     })
   } catch (e) {
@@ -207,7 +209,7 @@ postRoutes.post('/support', isLoggedIn, async (request, response) => {
 
   try {
     const requestData = ({ addressFrom, addressTo } = request.body)
-    await CreateSupport(requestData.addressFrom, requestData.addressTo)
+    await createSupport(requestData.addressFrom, requestData.addressTo)
 
     responseData.success = true
     response.json(responseData)
@@ -227,7 +229,7 @@ postRoutes.delete('/support', isLoggedIn, async (request, response) => {
 
   try {
     const requestData = ({ addressFrom, addressTo } = request.body)
-    await DeleteSupport(requestData.addressFrom, requestData.addressTo)
+    await deleteSupport(requestData.addressFrom, requestData.addressTo)
 
     responseData.success = true
     response.json(responseData)
@@ -267,7 +269,7 @@ postRoutes.get('/users/:id/supporting', isLoggedIn, async (request, response) =>
     if (!address) return response.json(responseData)
 
     // get supports count
-    const supportsResponse = await GetSupporting(address)
+    const supportsResponse = await getSupporting(address)
     if (supportsResponse.error && supportsResponse.error !== 'noError')
       return response.json(responseData)
 
@@ -310,7 +312,7 @@ postRoutes.get('/users/:id/supported', isLoggedIn, async (request, response) => 
     if (!address) return response.json(responseData)
 
     // get supports count
-    const supportsResponse = await GetSupported(address)
+    const supportsResponse = await getSupported(address)
     if (supportsResponse.error && supportsResponse.error !== 'noError')
       return response.json(responseData)
 
@@ -324,6 +326,25 @@ postRoutes.get('/users/:id/supported', isLoggedIn, async (request, response) => 
   }
 })
 
+/**
+ * send
+ */
+postRoutes.post('/send', isLoggedIn, async (request, response) => {
+  const responseData = {
+    success: false
+  }
 
+  try {
+    
+    const requestData = ({ addressFrom, addressTo, amount } = request.body)
+    console.log(requestData)
+    await send(requestData.addressFrom, requestData.addressTo, requestData.amount)
+
+    responseData.success = true;
+    response.json(responseData)
+  } catch (e) {
+    response.json(responseData)
+  }
+})
 
 module.exports = postRoutes

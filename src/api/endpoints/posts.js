@@ -6,7 +6,7 @@ const mongoose = require('mongoose')
 const Post = require('../../models/post')
 const User = require('../../models/user')
 
-const { GetSupporting } = require('../../core/core')
+const { getSupporting } = require('../../core/core')
 
 const {
   isLoggedIn
@@ -227,6 +227,9 @@ postRoutes.get('/post/:postId', isLoggedIn, (request, response) => {
   }
 })
 
+/**
+ * GET /timeline
+ */
 postRoutes.get('/timeline', isLoggedIn, async (request, response) => {
   try {
 
@@ -242,10 +245,56 @@ postRoutes.get('/timeline', isLoggedIn, async (request, response) => {
     const userAddress = user.address
 
     // get all addresses supported by userAddress
-    let result = await GetSupporting(userAddress)
+    let result = await getSupporting(userAddress)
     let supportAddresses = result.data.supports.map(item => (item.addressTo)) 
 
     const users = await User.find({ address: { $in: supportAddresses } })
+      .lean()
+      .exec()
+
+    const userIds = users.map(user=>user._id);
+    const posts =  await Post.find({
+      userId:  { $in: userIds }
+    }).populate('userId');
+
+    response.json({
+      success: true,
+      data: posts
+    })
+  } catch (e) {
+    console.log(e)
+    response.json({success: false})
+  }
+
+})
+
+
+/**
+ * GET /discover
+ */
+postRoutes.get('/discover', isLoggedIn, async (request, response) => {
+  try {
+
+    const userId = request.user._id
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      throw new Error('Invalid user id')
+    }
+
+    const user = await User.findById(userId)
+      .lean()
+      .exec()
+    const userAddress = user.address
+
+    // get all addresses supported by userAddress
+    let result = await getSupporting(userAddress)
+    let addresses = result.data.supports.map(item => (item.addressTo)) 
+
+    // add myself
+    addresses.push(userAddress)
+
+    // find all users who not in this list
+    const users = await User.find({ address: { $nin: addresses } })
       .lean()
       .exec()
 

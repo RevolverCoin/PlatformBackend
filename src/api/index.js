@@ -31,4 +31,5 @@ module.exports = function (app, passport) {
     })
     .use(postRoutes)
     .use(userRoutes)
+  
 }
