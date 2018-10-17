@@ -18,7 +18,7 @@ function prepareUsers(...users) {
     desc: entry.desc,
     email: entry.local && entry.local.email,
     address: entry.address,
-    avatar: '',
+    avatar: entry.avatar,
     username: entry.username,
   }))
 }
@@ -118,13 +118,17 @@ postRoutes.get('/profile/search', isLoggedIn, async (request, response) => {
   response.json(responseData)
 })
 
+/**
+ * Update profile
+ */
 postRoutes.patch('/profile', isLoggedIn, async (request, response) => {
   try {
-    const { username, desc } = request.body
+    const { username, desc, avatar } = request.body
 
     const update = cleanObject({
       username,
       desc,
+      avatar
     })
 
     const { _id: userId } = request.user

@@ -19,7 +19,7 @@ function preparePosts(posts) {
     text: entry.text,
     timestamp: entry.createdAt,
     user: {
-      avatar: '',
+      avatar: entry.user.avatar,
       username: entry.user.username,
       id: entry.userId,
     }

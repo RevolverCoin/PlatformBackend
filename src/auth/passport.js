@@ -10,7 +10,7 @@ var User = require('../models/user')
 // load the auth variables
 var { auth: configAuth } = require('../config') // use this one for testing
 
-const { CreateAddress } = require('../core/core')
+const { createAddress } = require('../core/core')
 
 module.exports = function(passport) {
   // =========================================================================
@@ -93,7 +93,7 @@ module.exports = function(passport) {
                 return done(null, false, req.flash('signupMessage', 'That email is already taken.'))
               } else {
                 // get new address
-                const response = await CreateAddress('Supporter')
+                const response = await createAddress('Supporter')
                 if (!response || !(response.error && response.error==='noError')) {
                     return done(null, false, req.flash('signupMessage', 'Core service API failure'))
                 }
