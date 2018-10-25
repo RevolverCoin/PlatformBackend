@@ -2,26 +2,12 @@ const express = require('express')
 const mongoose = require('mongoose')
 
 const User = require('../../models/user')
-const { isLoggedIn, cleanObject } = require('../../utils/utils')
+const { isLoggedIn, cleanObject, prepareUsers } = require('../../utils/utils')
 
 const { createSupport, deleteSupport, getSupporting, getSupported, getBalance, send } = require('../../core/core')
 
 const postRoutes = express.Router()
 
-/**
- *converts internal mongodb scheme to response-compatible user format
- *(omits private fields like password etc)
- */
-function prepareUsers(...users) {
-  return users.map(entry => ({
-    id: entry._id,
-    desc: entry.desc,
-    email: entry.local && entry.local.email,
-    address: entry.address,
-    avatar: entry.avatar,
-    username: entry.username,
-  }))
-}
 
 /**
  * get user profile and support lists

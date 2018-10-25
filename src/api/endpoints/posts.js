@@ -9,22 +9,12 @@ const User = require('../../models/user')
 const { getSupporting } = require('../../core/core')
 
 const {
-  isLoggedIn
+  isLoggedIn, preparePosts, prepareUsers
 } = require('../../utils/utils')
 const postRoutes = express.Router()
 
-function preparePosts(posts) {
-  return posts.map(entry => ({
-    id: entry._id,
-    text: entry.text,
-    timestamp: entry.createdAt,
-    user: {
-      avatar: entry.user.avatar,
-      username: entry.user.username,
-      id: entry.userId,
-    }
-  }))
-}
+
+
 
 function hasNexPage(page, count, pageSize) {
   return page < Math.ceil(count / pageSize)
@@ -125,11 +115,13 @@ postRoutes.get('/posts/my', isLoggedIn, async (request, response) => {
   responseData.data = await fetchPosts({
     userId:  mongoose.Types.ObjectId(request.user._id)
   }, pageSize, page)
+
   responseData.success = true
   response.json(responseData)
 })
 
 postRoutes.post('/post/add', isLoggedIn, (request, response) => {
+  
   const responseData = {
     success: false,
     data: {},
@@ -153,7 +145,7 @@ postRoutes.post('/post/add', isLoggedIn, (request, response) => {
         createdAt: new Date()
       }
 
-      Post.create(newPostData, (error, document) => {
+      Post.create(newPostData, async (error, document) => {
         if (error) {
           responseData.errors.push({
             type: 'critical',
@@ -163,14 +155,18 @@ postRoutes.post('/post/add', isLoggedIn, (request, response) => {
           const postId = document._id
 
           if (postId) {
+
+            const user = await User.findById(userId)
+            const [userInfo] = user ? prepareUsers(user) : []
+
             responseData.data = {
               id: postId,
               timestamp: newPostData.createdAt,
               ...(expanded ? {
                 user: {
                   id: userId,
-                  username: 'John Smith',
-                  avatar: ''
+                  username: userInfo.username,
+                  avatar: userInfo.avatar
                 },
                 text: newPostData.text,
               } : {}) //include other post fields
@@ -179,7 +175,7 @@ postRoutes.post('/post/add', isLoggedIn, (request, response) => {
           } else {
             responseData.errors.push({
               type: 'default',
-              message: 'Please try again.'
+              message: 'TRY_AGAIN'
             })
           }
         }
@@ -189,7 +185,7 @@ postRoutes.post('/post/add', isLoggedIn, (request, response) => {
     } else {
       responseData.errors.push({
         type: 'warning',
-        message: 'Please enter post.'
+        message: 'EMPTY_POST'
       })
 
       response.json(responseData)
@@ -197,7 +193,7 @@ postRoutes.post('/post/add', isLoggedIn, (request, response) => {
   } else {
     responseData.errors.push({
       type: 'critical',
-      message: 'You are not signed in. Please sign in to post a post.'
+      message: 'NOT_SIGNED_IN'
     })
 
     response.json(responseData)

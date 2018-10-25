@@ -40,9 +40,39 @@ function cleanObject(obj) {
   return result
 }
 
+function preparePosts(posts) {
+  return posts.map(entry => ({
+    id: entry._id,
+    text: entry.text,
+    timestamp: entry.createdAt,
+    user: {
+      avatar: entry.user.avatar,
+      username: entry.user.username,
+      id: entry.userId,
+    }
+  }))
+}
+
+/**
+ *converts internal mongodb scheme to response-compatible user format
+ *(omits private fields like password etc)
+ */
+function prepareUsers(...users) {
+  return users.map(entry => ({
+    id: entry._id,
+    desc: entry.desc,
+    email: entry.local && entry.local.email,
+    address: entry.address,
+    avatar: entry.avatar,
+    username: entry.username,
+  }))
+}
+
 module.exports = {
   createSuccessResponse,
   createErrorResponse,
   isLoggedIn,
-  cleanObject
+  cleanObject,
+  preparePosts,
+  prepareUsers
 }
