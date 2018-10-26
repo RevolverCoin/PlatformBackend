@@ -1,6 +1,7 @@
 const passport = require('passport')
 const postRoutes = require('../api/endpoints/posts')
 const userRoutes = require('../api/endpoints/user')
+const blockchainRoutes = require('../api/endpoints/blockchain')
 const {
   createSuccessResponse
 } = require('../utils/utils')
@@ -31,5 +32,6 @@ module.exports = function (app, passport) {
     })
     .use(postRoutes)
     .use(userRoutes)
+    .use(blockchainRoutes)
   
 }

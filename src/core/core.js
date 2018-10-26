@@ -61,7 +61,7 @@ function getBalance(address) {
       headers: {
         'Content-Type': 'application/json',
       },
-    }))
+    })).then(res => res.json())
 }
 
 function send(addressFrom, addressTo, amount) {
@@ -72,8 +72,32 @@ function send(addressFrom, addressTo, amount) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({addressFrom, addressTo, amount}),
-    }))
+    })).then(res => res.json())
+}
+
+function getTransactions(address) {
+  return (
+    fetch(`${config.COREURL}/blockchain/${address}/transactions`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })).then(res => res.json())
 }
 
 
-module.exports = {createAddress, createSupport, deleteSupport, getSupporting, getSupported, getBalance, send};
+function getRewardTransactions(address) {
+  return (
+    fetch(`${config.COREURL}/blockchain/${address}/rewardtransactions`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })).then(res => res.json())
+}
+
+
+
+
+
+module.exports = {createAddress, createSupport, deleteSupport, getSupporting, getSupported, getBalance, send, getTransactions, getRewardTransactions};

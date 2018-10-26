@@ -4,7 +4,7 @@ const mongoose = require('mongoose')
 const User = require('../../models/user')
 const { isLoggedIn, cleanObject, prepareUsers } = require('../../utils/utils')
 
-const { createSupport, deleteSupport, getSupporting, getSupported, getBalance, send } = require('../../core/core')
+const { createSupport, deleteSupport, getSupporting, getSupported, getBalance } = require('../../core/core')
 
 const postRoutes = express.Router()
 
@@ -172,8 +172,7 @@ postRoutes.get('/info', isLoggedIn, async (request, response) => {
     supports.supported = result.data.supports
 
     // get balance etc
-    const balanceResponse = await getBalance(address)
-    const balance = await balanceResponse.json()
+    const balance = await getBalance(address)
 
     response.json({
       success: true,
@@ -218,7 +217,8 @@ postRoutes.delete('/support', isLoggedIn, async (request, response) => {
   }
 
   try {
-    const requestData = ({ addressFrom, addressTo } = request.body)
+    const { addressFrom, addressTo } = request.body
+    const requestData = { addressFrom, addressTo }
     await deleteSupport(requestData.addressFrom, requestData.addressTo)
 
     responseData.success = true
@@ -316,25 +316,6 @@ postRoutes.get('/users/:id/supported', isLoggedIn, async (request, response) => 
   }
 })
 
-/**
- * send
- */
-postRoutes.post('/send', isLoggedIn, async (request, response) => {
-  const responseData = {
-    success: false
-  }
 
-  try {
-    
-    const requestData = ({ addressFrom, addressTo, amount } = request.body)
-    console.log(requestData)
-    await send(requestData.addressFrom, requestData.addressTo, requestData.amount)
-
-    responseData.success = true;
-    response.json(responseData)
-  } catch (e) {
-    response.json(responseData)
-  }
-})
 
 module.exports = postRoutes

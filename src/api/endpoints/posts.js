@@ -297,7 +297,7 @@ postRoutes.get('/discover', isLoggedIn, async (request, response) => {
     const userIds = users.map(user=>user._id);
     const posts =  await Post.find({
       userId:  { $in: userIds }
-    }).populate('userId');
+    }, null, {sort: {createdAt: -1}}).populate('userId');
 
     response.json({
       success: true,
