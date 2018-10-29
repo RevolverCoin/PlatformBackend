@@ -108,6 +108,41 @@ function getServiceInfo()
     })).then(res => res.json())
 }
 
+function getType(address)
+{
+  return (
+    fetch(`${config.COREURL}/address/${address}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })).then(res => res.json())
+
+}
+
+function claimGenerator(address) 
+{
+  return (
+    fetch(`${config.COREURL}/blockchain/claimgenerator`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({address}),
+    })).then(res => res.json())
+}
+
+function unclaimGenerator(address)
+{
+  return (
+    fetch(`${config.COREURL}/blockchain/unclaimgenerator`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({address}),
+    })).then(res => res.json())
+}
 
 module.exports = {
   createAddress, 
@@ -116,8 +151,11 @@ module.exports = {
   getSupporting, 
   getSupported, 
   getBalance, 
+  getType,
   send, 
   getTransactions, 
   getRewardTransactions,
-  getServiceInfo
+  getServiceInfo,
+  claimGenerator,
+  unclaimGenerator
 };

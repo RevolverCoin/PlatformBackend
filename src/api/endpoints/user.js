@@ -4,7 +4,7 @@ const mongoose = require('mongoose')
 const User = require('../../models/user')
 const { isLoggedIn, cleanObject, prepareUsers } = require('../../utils/utils')
 
-const { createSupport, deleteSupport, getSupporting, getSupported, getBalance } = require('../../core/core')
+const { createSupport, deleteSupport, getSupporting, getSupported, getBalance, getType } = require('../../core/core')
 
 const postRoutes = express.Router()
 
@@ -174,12 +174,17 @@ postRoutes.get('/info', isLoggedIn, async (request, response) => {
     // get balance etc
     const balance = await getBalance(address)
 
+    // get type
+    const type = await getType(address)
+
     response.json({
       success: true,
       data: {
         profile: converted,
         supports,
-        balance: balance.data
+        balance: balance.data.balance,
+        lockedBalance: balance.data.lockedBalance,
+        type: type.data.type
       },
     })
   } catch (e) {

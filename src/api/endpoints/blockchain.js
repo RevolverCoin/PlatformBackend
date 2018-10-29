@@ -1,7 +1,7 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const { isLoggedIn, prepareUsers } = require('../../utils/utils')
-const { send, getTransactions, getRewardTransactions, getServiceInfo } = require('../../core/core')
+const { send, getTransactions, getRewardTransactions, getServiceInfo, claimGenerator, unclaimGenerator } = require('../../core/core')
 const User = require('../../models/user')
 
 const blockchainRoutes = express.Router()
@@ -110,6 +110,71 @@ blockchainRoutes.get('/service/info', isLoggedIn, async (request, response) => {
     responseData.success = true
     responseData.data = info.data
 
+    response.json(responseData)
+  } catch (e) {
+    responseData.error=e.toString()
+    response.json(responseData)
+  }
+})
+
+
+/**
+ * /claimgenerator
+ */
+blockchainRoutes.post('/claimgenerator', isLoggedIn, async (request, response) => {
+  const responseData = {
+    success: false,
+  }
+
+  try {
+
+    const userId = request.user._id
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      throw new Error('Invalid user id')
+    }
+
+    // get profile info
+    const user = await User.findById(userId)
+    const [userInfo] = user ? prepareUsers(user) : []
+    
+    const address = userInfo.address
+      
+    const result = await claimGenerator(address)
+
+    responseData.success = true
+    response.json(responseData)
+  } catch (e) {
+    responseData.error=e.toString()
+    response.json(responseData)
+  }
+})
+
+/**
+ * /unclaimgenerator
+ */
+blockchainRoutes.post('/unclaimgenerator', isLoggedIn, async (request, response) => {
+  const responseData = {
+    success: false,
+  }
+
+  try {
+
+    const userId = request.user._id
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      throw new Error('Invalid user id')
+    }
+
+    // get profile info
+    const user = await User.findById(userId)
+    const [userInfo] = user ? prepareUsers(user) : []
+    
+    const address = userInfo.address
+      
+    const result = await unclaimGenerator(address)
+
+    responseData.success = true
     response.json(responseData)
   } catch (e) {
     responseData.error=e.toString()
