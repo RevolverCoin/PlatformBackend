@@ -1,7 +1,7 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const { isLoggedIn, prepareUsers } = require('../../utils/utils')
-const { send, getTransactions, getRewardTransactions } = require('../../core/core')
+const { send, getTransactions, getRewardTransactions, getServiceInfo } = require('../../core/core')
 const User = require('../../models/user')
 
 const blockchainRoutes = express.Router()
@@ -95,5 +95,27 @@ blockchainRoutes.get('/rewardtransactions', isLoggedIn, async (request, response
     response.json(responseData)
   }
 })
+
+/**
+ * /service/info
+ */
+blockchainRoutes.get('/service/info', isLoggedIn, async (request, response) => {
+  const responseData = {
+    success: false,
+  }
+
+  try {
+    const info = await getServiceInfo()
+
+    responseData.success = true
+    responseData.data = info.data
+
+    response.json(responseData)
+  } catch (e) {
+    responseData.error=e.toString()
+    response.json(responseData)
+  }
+})
+
 
 module.exports = blockchainRoutes

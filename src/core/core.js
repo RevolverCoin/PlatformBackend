@@ -97,7 +97,27 @@ function getRewardTransactions(address) {
 }
 
 
+function getServiceInfo()
+{
+  return (
+    fetch(`${config.COREURL}/service/info`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })).then(res => res.json())
+}
 
 
-
-module.exports = {createAddress, createSupport, deleteSupport, getSupporting, getSupported, getBalance, send, getTransactions, getRewardTransactions};
+module.exports = {
+  createAddress, 
+  createSupport, 
+  deleteSupport, 
+  getSupporting, 
+  getSupported, 
+  getBalance, 
+  send, 
+  getTransactions, 
+  getRewardTransactions,
+  getServiceInfo
+};
