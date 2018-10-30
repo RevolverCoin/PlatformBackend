@@ -245,7 +245,7 @@ postRoutes.get('/users/:id/supporting', isLoggedIn, async (request, response) =>
   }
 
   try {
-    const userId = request.user._id
+    const userId = request.params.id
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       throw new Error('Invalid user id')
@@ -288,7 +288,7 @@ postRoutes.get('/users/:id/supported', isLoggedIn, async (request, response) => 
   }
 
   try {
-    const userId = request.user._id
+    const userId = request.params.id
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       throw new Error('Invalid user id')
