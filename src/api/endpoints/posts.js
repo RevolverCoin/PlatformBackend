@@ -236,8 +236,6 @@ postRoutes.get('/timeline', isLoggedIn, async (request, response) => {
     }
 
     const user = await User.findById(userId)
-      .lean()
-      .exec()
     const userAddress = user.address
 
     // get all addresses supported by userAddress
@@ -245,13 +243,12 @@ postRoutes.get('/timeline', isLoggedIn, async (request, response) => {
     let supportAddresses = result.data.supports.map(item => (item.addressTo)) 
 
     const users = await User.find({ address: { $in: supportAddresses } })
-      .lean()
-      .exec()
+
 
     const userIds = users.map(user=>user._id);
     const posts =  await Post.find({
       userId:  { $in: userIds }
-    }).populate('userId');
+    }, {text:1, createdAt:1}).populate('userId', {_id:1, username:1, avatar:1});
 
     response.json({
       success: true,
@@ -278,8 +275,6 @@ postRoutes.get('/discover', isLoggedIn, async (request, response) => {
     }
 
     const user = await User.findById(userId)
-      .lean()
-      .exec()
     const userAddress = user.address
 
     // get all addresses supported by userAddress
@@ -291,13 +286,11 @@ postRoutes.get('/discover', isLoggedIn, async (request, response) => {
 
     // find all users who not in this list
     const users = await User.find({ address: { $nin: addresses } })
-      .lean()
-      .exec()
 
     const userIds = users.map(user=>user._id);
     const posts =  await Post.find({
       userId:  { $in: userIds }
-    }, null, {sort: {createdAt: -1}}).populate('userId');
+    },  {text:1, createdAt:1}, {sort: {createdAt: -1}}).populate('userId', {_id:1, username:1, avatar:1});
 
     response.json({
       success: true,

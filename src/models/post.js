@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 // Post Collection
 let PostSchema = mongoose.Schema({
   text: String,
-  userId: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
+  userId: { type: mongoose.Schema.ObjectId, ref: 'User' },
   createdAt: Date
 });
 
