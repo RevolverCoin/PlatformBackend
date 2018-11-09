@@ -65,6 +65,8 @@ function prepareUsers(...users) {
     address: entry.address,
     avatar: entry.avatar,
     username: entry.username,
+    website: entry.website,
+    links: entry.links
   }))
 }
 

@@ -173,6 +173,7 @@ blockchainRoutes.post('/unclaimgenerator', isLoggedIn, async (request, response)
     const address = userInfo.address
       
     const result = await unclaimGenerator(address)
+    console.log(result)
 
     responseData.success = true
     response.json(responseData)

@@ -250,10 +250,12 @@ postRoutes.get('/timeline', isLoggedIn, async (request, response) => {
       userId:  { $in: userIds }
     }, {text:1, createdAt:1}).populate('userId', {_id:1, username:1, avatar:1});
 
+
     response.json({
       success: true,
       data: posts
     })
+
   } catch (e) {
     console.log(e)
     response.json({success: false})

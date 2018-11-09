@@ -4,10 +4,16 @@ const mongoose = require('mongoose')
 const User = require('../../models/user')
 const { isLoggedIn, cleanObject, prepareUsers } = require('../../utils/utils')
 
-const { createSupport, deleteSupport, getSupporting, getSupported, getBalance, getType } = require('../../core/core')
+const {
+  createSupport,
+  deleteSupport,
+  getSupporting,
+  getSupported,
+  getBalance,
+  getType,
+} = require('../../core/core')
 
 const postRoutes = express.Router()
-
 
 /**
  * get user profile and support lists
@@ -54,7 +60,7 @@ postRoutes.get('/address/:address', isLoggedIn, async (request, response) => {
   try {
     const { address } = request.params
 
-    const [user] = await User.find({address})
+    const [user] = await User.find({ address })
       .lean()
       .exec()
 
@@ -84,7 +90,6 @@ postRoutes.get('/address/:address', isLoggedIn, async (request, response) => {
   }
 })
 
-
 postRoutes.get('/profile/search', isLoggedIn, async (request, response) => {
   const responseData = {
     success: false,
@@ -92,10 +97,20 @@ postRoutes.get('/profile/search', isLoggedIn, async (request, response) => {
   const { query: searchStringParam } = request.query
 
   const users = await User.find({
-    desc: {
-      $regex: searchStringParam,
-      $options: 'i',
-    },
+    $or: [
+      {
+        desc: {
+          $regex: searchStringParam,
+          $options: 'i',
+        },
+      },
+      {
+        username: {
+          $regex: searchStringParam,
+          $options: 'i',
+        }, 
+      }
+    ],
   })
 
   const converted = users.length ? prepareUsers(...users) : undefined
@@ -109,12 +124,14 @@ postRoutes.get('/profile/search', isLoggedIn, async (request, response) => {
  */
 postRoutes.patch('/profile', isLoggedIn, async (request, response) => {
   try {
-    const { username, desc, avatar } = request.body
+    const { username, description, avatar, website, links } = request.body
 
     const update = cleanObject({
       username,
-      desc,
-      avatar
+      desc: description,
+      avatar,
+      website,
+      links
     })
 
     const { _id: userId } = request.user
@@ -149,7 +166,6 @@ postRoutes.patch('/profile', isLoggedIn, async (request, response) => {
  */
 postRoutes.get('/info', isLoggedIn, async (request, response) => {
   try {
-
     const userId = request.user._id
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
@@ -184,7 +200,7 @@ postRoutes.get('/info', isLoggedIn, async (request, response) => {
         supports,
         balance: balance.data.balance,
         lockedBalance: balance.data.lockedBalance,
-        type: type.data.type
+        type: type.data.type,
       },
     })
   } catch (e) {
@@ -320,7 +336,5 @@ postRoutes.get('/users/:id/supported', isLoggedIn, async (request, response) => 
     response.json(responseData)
   }
 })
-
-
 
 module.exports = postRoutes
