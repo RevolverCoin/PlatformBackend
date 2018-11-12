@@ -144,6 +144,17 @@ function unclaimGenerator(address)
     })).then(res => res.json())
 }
 
+function getTopSupports()
+{
+  return (
+    fetch(`${config.COREURL}/support/top`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })).then(res => res.json()) 
+}
+
 module.exports = {
   createAddress, 
   createSupport, 
@@ -157,5 +168,6 @@ module.exports = {
   getRewardTransactions,
   getServiceInfo,
   claimGenerator,
-  unclaimGenerator
+  unclaimGenerator,
+  getTopSupports
 };

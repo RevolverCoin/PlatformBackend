@@ -16,6 +16,8 @@ module.exports = function (app, passport) {
       failureRedirect: '/signup', // redirect back to the signup page if there is an error
       failureFlash: true // allow flash messages
     }), (req, res) => {
+
+      console.log(req.user._id)
       res.status(200).json(createSuccessResponse({
         id: req.user._id
       }))

@@ -82,6 +82,7 @@ module.exports = function(passport) {
 
         // asynchronous
         process.nextTick(function() {
+          
           // if the user is not already logged in:
           if (!req.user) {
             User.findOne({ 'local.email': email }, async function(err, user) {

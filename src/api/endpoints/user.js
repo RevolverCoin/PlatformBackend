@@ -11,6 +11,7 @@ const {
   getSupported,
   getBalance,
   getType,
+  getTopSupports,
 } = require('../../core/core')
 
 const postRoutes = express.Router()
@@ -336,5 +337,45 @@ postRoutes.get('/users/:id/supported', isLoggedIn, async (request, response) => 
     response.json(responseData)
   }
 })
+
+/**
+ * CORE Bridge: GetTopSupports
+ */
+postRoutes.get('/top', isLoggedIn, async (request, response) => {
+  const responseData = {
+    success: false,
+  }
+
+  try {
+    
+    const data = await getTopSupports()
+    if (data.error && data.error !== 'noError')
+      return response.json(responseData)
+
+    if (!data.data || typeof data.data === 'undefined') {
+      return response.json(responseData)
+    }
+
+    const addresses = data.data.map(item=>item.address)
+    const users = await User.find(
+      { address: { $in: addresses } }, 
+      {_id:0, desc:1, username:1, avatar:1, address: 1}, 
+      {limit: 100, lean: true}
+    )
+    
+    const result = users.map(user=>{
+      const supportCount = data.data.find(item => item.address === user.address).supportCount 
+      return ({...user, supportCount})
+    })
+
+    responseData.success = true
+    responseData.data = result 
+    response.json(responseData)
+  } catch (e) {
+    console.log(e)
+    response.json(responseData)
+  }
+})
+
 
 module.exports = postRoutes
