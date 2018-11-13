@@ -49,7 +49,6 @@ module.exports = function(passport) {
       },
       function(req, email, password, done) {
         if (email) email = email.toLowerCase() // Use lower-case e-mails to avoid case-sensitive e-mail matching
-
         // asynchronous
         process.nextTick(function() {
           User.findOne({ 'local.email': email }, function(err, user) {
@@ -58,11 +57,12 @@ module.exports = function(passport) {
 
             // if no user is found, return the message
             if (!user) return done(null, false, req.flash('loginMessage', 'No user found.'))
+            if (!user.isVerified) return done(null, false, req.flash('loginMessage', 'User is not verified. Please check your email.'))
 
             if (!user.validPassword(password))
               return done(null, false, req.flash('loginMessage', 'Oops! Wrong password.'))
             // all is well, return user
-            else return done(null, user)
+            return done(null, user)
           })
         })
       },
@@ -98,15 +98,15 @@ module.exports = function(passport) {
                 return done(null, false, req.flash('signupMessage', 'That email is already taken.'))
               } else {
                 // get new address
-                const response = await createAddress('Supporter')
-                if (!response || !(response.error && response.error==='noError')) {
-                    return done(null, false, req.flash('signupMessage', 'Core service API failure'))
-                }
+                // const response = await createAddress('Supporter')
+                // if (!response || !(response.error && response.error==='noError')) {
+                //     return done(null, false, req.flash('signupMessage', 'Core service API failure'))
+                // }
 
                 // create the user
                 var newUser = new User()
                 newUser.username = req.body.username
-                newUser.address = response.address
+//                newUser.address = response.address
                 newUser.local.email = email
                 newUser.local.password = newUser.generateHash(password)
                 // generate verification info
