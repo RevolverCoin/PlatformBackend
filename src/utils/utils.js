@@ -1,3 +1,5 @@
+const crypto = require('crypto')
+
 /**
  * Defines template for successful responses
  * @param {*} data
@@ -73,8 +75,17 @@ function prepareUsers(...users) {
 function getUserVerificationInfo(user){
   return user && {
     isVerified: user.isVerified,
-    verificationCode: user.verificationCode,
+    verificationCode: user.local.verificationCode,
   }
+}
+
+/**
+ * creates random base64 string
+ *
+ * @returns random base64 string
+ */
+function createRandomBase64String() {
+  return crypto.createHash('sha256').update(Math.random().toString()).digest('base64');
 }
 
 module.exports = {
@@ -85,4 +96,5 @@ module.exports = {
   preparePosts,
   prepareUsers,
   getUserVerificationInfo,
+  createRandomBase64String,
 }
