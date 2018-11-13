@@ -248,7 +248,7 @@ postRoutes.get('/timeline', isLoggedIn, async (request, response) => {
     const userIds = users.map(user=>user._id);
     const posts =  await Post.find({
       userId:  { $in: userIds }
-    }, {text:1, createdAt:1}).populate('userId', {_id:1, username:1, avatar:1});
+    }, {text:1, createdAt:1}, {sort: {createdAt: -1}}).populate('userId', {_id:1, username:1, avatar:1});
 
 
     response.json({
