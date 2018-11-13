@@ -2,7 +2,12 @@ const express = require('express')
 const mongoose = require('mongoose')
 
 const User = require('../../models/user')
-const { isLoggedIn, cleanObject, prepareUsers } = require('../../utils/utils')
+const {
+  isLoggedIn,
+  cleanObject,
+  prepareUsers,
+  getUserVerificationInfo,
+} = require('../../utils/utils')
 
 const {
   createSupport,
@@ -17,13 +22,71 @@ const {
 const userRoutes = express.Router()
 
 
+/**
+ * verifies user after account creation
+ */
+userRoutes.get('/users/:id/verify', async (request, response) => {
+  try {
+    const {
+      id
+    } = request.params
+    //verification code
+    const {
+      code
+    } = request.query
+
+    const user = await User.findById(id)
+      .lean()
+      .exec()
+
+    const converted = getUserVerificationInfo(user)
+
+    //checks if user passes verification check
+    const isVerificationComplete = () => {
+      if (converted) {
+        const {
+          verificationCode,
+          isVerified,
+        } = converted
+        // either user is already verified or the code matches with the one in DB
+        return isVerified || verificationCode === code
+      }
+
+      return false
+    }
+
+    if (isVerificationComplete()) {
+      response.json({
+        success: isVerificationComplete()
+      })
+
+      // update verification flag in DB
+      await User.findOneAndUpdate({
+        _id: id,
+      }, {
+        isVerified: true
+      }, )
+
+    }
+
+
+
+  } catch (e) {
+    console.log(e)
+    response.json({
+      success: false,
+    })
+  }
+})
 
 /**
  * get user profile and support lists
  */
 userRoutes.get('/users/:id', isLoggedIn, async (request, response) => {
   try {
-    const { id } = request.params
+    const {
+      id
+    } = request.params
 
     const user = await User.findById(id)
       .lean()
@@ -61,9 +124,13 @@ userRoutes.get('/users/:id', isLoggedIn, async (request, response) => {
  */
 userRoutes.get('/address/:address', isLoggedIn, async (request, response) => {
   try {
-    const { address } = request.params
+    const {
+      address
+    } = request.params
 
-    const [user] = await User.find({ address })
+    const [user] = await User.find({
+        address
+      })
       .lean()
       .exec()
 
@@ -97,11 +164,12 @@ userRoutes.get('/profile/search', isLoggedIn, async (request, response) => {
   const responseData = {
     success: false,
   }
-  const { query: searchStringParam } = request.query
+  const {
+    query: searchStringParam
+  } = request.query
 
   const users = await User.find({
-    $or: [
-      {
+    $or: [{
         desc: {
           $regex: searchStringParam,
           $options: 'i',
@@ -127,7 +195,13 @@ userRoutes.get('/profile/search', isLoggedIn, async (request, response) => {
  */
 userRoutes.patch('/profile', isLoggedIn, async (request, response) => {
   try {
-    const { username, description, avatar, website, links } = request.body
+    const {
+      username,
+      description,
+      avatar,
+      website,
+      links
+    } = request.body
 
     const update = cleanObject({
       username,
@@ -137,10 +211,11 @@ userRoutes.patch('/profile', isLoggedIn, async (request, response) => {
       links
     })
 
-    const { _id: userId } = request.user
+    const {
+      _id: userId
+    } = request.user
 
-    await User.findOneAndUpdate(
-      {
+    await User.findOneAndUpdate({
         _id: userId,
       },
       update,
@@ -221,7 +296,10 @@ userRoutes.post('/support', isLoggedIn, async (request, response) => {
   }
 
   try {
-    const requestData = ({ addressFrom, addressTo } = request.body)
+    const requestData = ({
+      addressFrom,
+      addressTo
+    } = request.body)
     await createSupport(requestData.addressFrom, requestData.addressTo)
 
     responseData.success = true
@@ -241,8 +319,14 @@ userRoutes.delete('/support', isLoggedIn, async (request, response) => {
   }
 
   try {
-    const { addressFrom, addressTo } = request.body
-    const requestData = { addressFrom, addressTo }
+    const {
+      addressFrom,
+      addressTo
+    } = request.body
+    const requestData = {
+      addressFrom,
+      addressTo
+    }
     await deleteSupport(requestData.addressFrom, requestData.addressTo)
 
     responseData.success = true
@@ -358,19 +442,30 @@ userRoutes.get('/top', isLoggedIn, async (request, response) => {
       return response.json(responseData)
     }
 
-    const addresses = data.data.map(item=>item.address)
-    const users = await User.find(
-      { address: { $in: addresses } },
-      {_id:1, desc:1, username:1, avatar:1, address: 1},
-      {limit: 100, lean: true}
-    )
-
-    const result = users.map(user=>{
-      const supportCount = data.data.find(item => item.address === user.address).supportCount
-      return ({...user, supportCount})
+    const addresses = data.data.map(item => item.address)
+    const users = await User.find({
+      address: {
+        $in: addresses
+      }
+    }, {
+      _id: 1,
+      desc: 1,
+      username: 1,
+      avatar: 1,
+      address: 1
+    }, {
+      limit: 100,
+      lean: true
     })
 
-    result.sort( (user1,user2) => {
+    const result = users.map(user => {
+      const supportCount = data.data.find(item => item.address === user.address).supportCount
+      return ({ ...user,
+        supportCount
+      })
+    })
+
+    result.sort((user1, user2) => {
       return (user1.supportCount > user2.supportCount) ? -1 : 1
     })
 
