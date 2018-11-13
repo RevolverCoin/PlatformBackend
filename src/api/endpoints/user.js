@@ -36,8 +36,6 @@ userRoutes.get('/users/:id/verify', async (request, response) => {
     } = request.query
 
     const user = await User.findById(id)
-      .lean()
-      .exec()
 
     const converted = getUserVerificationInfo(user)
 
@@ -57,7 +55,7 @@ userRoutes.get('/users/:id/verify', async (request, response) => {
 
     if (isVerificationComplete()) {
       response.json({
-        success: isVerificationComplete()
+        success:true
       })
 
       // update verification flag in DB
@@ -66,6 +64,13 @@ userRoutes.get('/users/:id/verify', async (request, response) => {
       }, {
         isVerified: true
       }, )
+
+    }
+
+    else {
+      response.json({
+        success: false
+      })
 
     }
 
