@@ -12,6 +12,10 @@ var { auth: configAuth } = require('../config') // use this one for testing
 
 const { createAddress } = require('../core/core')
 
+const { createRandomBase64String } = require('../utils/utils')
+
+
+
 module.exports = function(passport) {
   // =========================================================================
   // passport session setup ==================================================
@@ -82,7 +86,7 @@ module.exports = function(passport) {
 
         // asynchronous
         process.nextTick(function() {
-          
+
           // if the user is not already logged in:
           if (!req.user) {
             User.findOne({ 'local.email': email }, async function(err, user) {
@@ -105,7 +109,9 @@ module.exports = function(passport) {
                 newUser.address = response.address
                 newUser.local.email = email
                 newUser.local.password = newUser.generateHash(password)
-
+                // generate verification info
+                newUser.local.verificationCode = createRandomBase64String()
+                newUser.isVerified = false
                 newUser.save(function(err) {
                   if (err) return done(err)
 
