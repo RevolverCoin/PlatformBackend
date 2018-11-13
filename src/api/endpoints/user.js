@@ -359,7 +359,7 @@ postRoutes.get('/top', isLoggedIn, async (request, response) => {
     const addresses = data.data.map(item=>item.address)
     const users = await User.find(
       { address: { $in: addresses } }, 
-      {_id:0, desc:1, username:1, avatar:1, address: 1}, 
+      {_id:1, desc:1, username:1, avatar:1, address: 1}, 
       {limit: 100, lean: true}
     )
     
@@ -367,6 +367,10 @@ postRoutes.get('/top', isLoggedIn, async (request, response) => {
       const supportCount = data.data.find(item => item.address === user.address).supportCount 
       return ({...user, supportCount})
     })
+
+    result.sort( (user1,user2) => {
+      return (user1.supportCount > user2.supportCount) ? -1 : 1 
+    }) 
 
     responseData.success = true
     responseData.data = result 
