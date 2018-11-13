@@ -70,11 +70,19 @@ function prepareUsers(...users) {
   }))
 }
 
+function getUserVerificationInfo(user){
+  return user && {
+    isVerified: user.isVerified,
+    verificationCode: user.verificationCode,
+  }
+}
+
 module.exports = {
   createSuccessResponse,
   createErrorResponse,
   isLoggedIn,
   cleanObject,
   preparePosts,
-  prepareUsers
+  prepareUsers,
+  getUserVerificationInfo,
 }
