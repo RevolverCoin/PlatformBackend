@@ -9,13 +9,12 @@ var userSchema = mongoose.Schema({
     address          : String,
     avatar           : String,
     website          : String,
-    verificationCode : String,
     isVerified       : Boolean,
     links            : [String],
-
     local            : {
-        email        : String,
-        password     : String
+        email             : String,
+        password          : String,
+        verificationCode  : String,
     },
     facebook         : {
         id           : String,
