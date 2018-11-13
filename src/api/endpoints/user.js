@@ -14,12 +14,14 @@ const {
   getTopSupports,
 } = require('../../core/core')
 
-const postRoutes = express.Router()
+const userRoutes = express.Router()
+
+
 
 /**
  * get user profile and support lists
  */
-postRoutes.get('/users/:id', isLoggedIn, async (request, response) => {
+userRoutes.get('/users/:id', isLoggedIn, async (request, response) => {
   try {
     const { id } = request.params
 
@@ -57,7 +59,7 @@ postRoutes.get('/users/:id', isLoggedIn, async (request, response) => {
 /**
  * get user profile and support lists by address
  */
-postRoutes.get('/address/:address', isLoggedIn, async (request, response) => {
+userRoutes.get('/address/:address', isLoggedIn, async (request, response) => {
   try {
     const { address } = request.params
 
@@ -91,7 +93,7 @@ postRoutes.get('/address/:address', isLoggedIn, async (request, response) => {
   }
 })
 
-postRoutes.get('/profile/search', isLoggedIn, async (request, response) => {
+userRoutes.get('/profile/search', isLoggedIn, async (request, response) => {
   const responseData = {
     success: false,
   }
@@ -109,7 +111,7 @@ postRoutes.get('/profile/search', isLoggedIn, async (request, response) => {
         username: {
           $regex: searchStringParam,
           $options: 'i',
-        }, 
+        },
       }
     ],
   })
@@ -123,7 +125,7 @@ postRoutes.get('/profile/search', isLoggedIn, async (request, response) => {
 /**
  * Update profile
  */
-postRoutes.patch('/profile', isLoggedIn, async (request, response) => {
+userRoutes.patch('/profile', isLoggedIn, async (request, response) => {
   try {
     const { username, description, avatar, website, links } = request.body
 
@@ -165,7 +167,7 @@ postRoutes.patch('/profile', isLoggedIn, async (request, response) => {
 /**
  * Load info: profile, supports, etc
  */
-postRoutes.get('/info', isLoggedIn, async (request, response) => {
+userRoutes.get('/info', isLoggedIn, async (request, response) => {
   try {
     const userId = request.user._id
 
@@ -213,7 +215,7 @@ postRoutes.get('/info', isLoggedIn, async (request, response) => {
 /**
  * CORE Bridge: CreateSupport
  */
-postRoutes.post('/support', isLoggedIn, async (request, response) => {
+userRoutes.post('/support', isLoggedIn, async (request, response) => {
   const responseData = {
     success: false,
   }
@@ -233,7 +235,7 @@ postRoutes.post('/support', isLoggedIn, async (request, response) => {
 /**
  * CORE Bridge: DeleteSupport
  */
-postRoutes.delete('/support', isLoggedIn, async (request, response) => {
+userRoutes.delete('/support', isLoggedIn, async (request, response) => {
   const responseData = {
     success: false,
   }
@@ -255,7 +257,7 @@ postRoutes.delete('/support', isLoggedIn, async (request, response) => {
  * CORE Bridge: GetSupporting
  */
 
-postRoutes.get('/users/:id/supporting', isLoggedIn, async (request, response) => {
+userRoutes.get('/users/:id/supporting', isLoggedIn, async (request, response) => {
   const responseData = {
     success: false,
     supports: null,
@@ -298,7 +300,7 @@ postRoutes.get('/users/:id/supporting', isLoggedIn, async (request, response) =>
 /**
  * CORE Bridge: GetSupported
  */
-postRoutes.get('/users/:id/supported', isLoggedIn, async (request, response) => {
+userRoutes.get('/users/:id/supported', isLoggedIn, async (request, response) => {
   const responseData = {
     success: false,
     supports: null,
@@ -341,13 +343,13 @@ postRoutes.get('/users/:id/supported', isLoggedIn, async (request, response) => 
 /**
  * CORE Bridge: GetTopSupports
  */
-postRoutes.get('/top', isLoggedIn, async (request, response) => {
+userRoutes.get('/top', isLoggedIn, async (request, response) => {
   const responseData = {
     success: false,
   }
 
   try {
-    
+
     const data = await getTopSupports()
     if (data.error && data.error !== 'noError')
       return response.json(responseData)
@@ -358,22 +360,22 @@ postRoutes.get('/top', isLoggedIn, async (request, response) => {
 
     const addresses = data.data.map(item=>item.address)
     const users = await User.find(
-      { address: { $in: addresses } }, 
-      {_id:1, desc:1, username:1, avatar:1, address: 1}, 
+      { address: { $in: addresses } },
+      {_id:1, desc:1, username:1, avatar:1, address: 1},
       {limit: 100, lean: true}
     )
-    
+
     const result = users.map(user=>{
-      const supportCount = data.data.find(item => item.address === user.address).supportCount 
+      const supportCount = data.data.find(item => item.address === user.address).supportCount
       return ({...user, supportCount})
     })
 
     result.sort( (user1,user2) => {
-      return (user1.supportCount > user2.supportCount) ? -1 : 1 
-    }) 
+      return (user1.supportCount > user2.supportCount) ? -1 : 1
+    })
 
     responseData.success = true
-    responseData.data = result 
+    responseData.data = result
     response.json(responseData)
   } catch (e) {
     console.log(e)
@@ -382,4 +384,4 @@ postRoutes.get('/top', isLoggedIn, async (request, response) => {
 })
 
 
-module.exports = postRoutes
+module.exports = userRoutes
