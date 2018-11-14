@@ -45,6 +45,7 @@ function preparePosts(posts) {
     id: entry._id,
     text: entry.text,
     timestamp: entry.createdAt,
+    likes: entry.likes,
     user: {
       avatar: entry.user.avatar,
       username: entry.user.username,

@@ -14,8 +14,6 @@ const {
 const postRoutes = express.Router()
 
 
-
-
 function hasNexPage(page, count, pageSize) {
   return page < Math.ceil(count / pageSize)
 }
@@ -248,8 +246,9 @@ postRoutes.get('/timeline', isLoggedIn, async (request, response) => {
     const userIds = users.map(user=>user._id);
     const posts =  await Post.find({
       userId:  { $in: userIds }
-    }, {text:1, createdAt:1}, {sort: {createdAt: -1}}).populate('userId', {_id:1, username:1, avatar:1});
+    }, {text:1, createdAt:1, likes:1}, {sort: {createdAt: -1}}).populate('userId', {_id:1, username:1, avatar:1});
 
+    console.log(posts)
 
     response.json({
       success: true,
@@ -292,7 +291,7 @@ postRoutes.get('/discover', isLoggedIn, async (request, response) => {
     const userIds = users.map(user=>user._id);
     const posts =  await Post.find({
       userId:  { $in: userIds }
-    },  {text:1, createdAt:1}, {sort: {createdAt: -1}}).populate('userId', {_id:1, username:1, avatar:1});
+    },  {text:1, createdAt:1, likes:1}, {sort: {createdAt: -1}}).populate('userId', {_id:1, username:1, avatar:1});
 
     response.json({
       success: true,
@@ -301,6 +300,51 @@ postRoutes.get('/discover', isLoggedIn, async (request, response) => {
   } catch (e) {
     console.log(e)
     response.json({success: false})
+  }
+
+})
+
+/**
+ * POST /posts/like
+ */
+postRoutes.post('/posts/like', isLoggedIn, async (request, response) => {
+  try {
+
+    const userId = request.user._id
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      throw new Error('Invalid user id')
+    }
+
+    const {
+      postId,
+    } = request.body
+
+    const user = await User.findById(userId)
+    if (!user)
+      throw new Error('User not found')
+    
+    const post = await Post.findById(postId, {likes:1})
+    if (!post)
+        throw new Error('Post not found')
+  
+    const found = post.likes.find(item => item.toString() === userId.toString())
+    if (typeof found !== 'undefined')
+      throw new Error('Like already assigned by this user')
+
+    const result = await Post.findByIdAndUpdate(postId, {$push: { likes: userId } }, {new: true, lean:true} )
+    if (!result)
+      throw new Error('Internal Error')
+
+      console.log(result)
+
+    response.json({
+      success: true,
+      data: result
+    })
+  } catch (e) {
+    console.log(e)
+    response.json({success: false, message: e.message})
   }
 
 })
