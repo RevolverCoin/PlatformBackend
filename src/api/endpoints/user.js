@@ -7,7 +7,12 @@ const {
   cleanObject,
   prepareUsers,
   getUserVerificationInfo,
+  createRandomBase64String
 } = require('../../utils/utils')
+
+const {
+  PASSWORD_RESET_EXPIRY_TIME
+} = require('../../config')
 
 const {
   createSupport,
@@ -21,6 +26,95 @@ const {
 
 const userRoutes = express.Router()
 
+
+userRoutes.post('/setpwd', async (request, response) => {
+  try {
+    const {
+      id,
+      code,
+      password
+    } = request.body
+
+    const user = await User.findById(id)
+    const now = (new Date()).getTime();
+    // request hasn't expired and auth code is valid
+    if (user && now < user.local.resetExpires && user.local.passwordResetCode === code) {
+      // update pwd and nullify reset state
+      await User.findOneAndUpdate({
+        _id: id,
+      }, {
+        local: {
+          ...user.local,
+          password: user.generateHash(password)
+        }
+      }, )
+
+      await User.findOneAndUpdate({
+        _id: id
+      }, {
+        $set: {
+          "local.password": user.generateHash(password),
+        },
+        $unset: {
+          "local.passwordResetCode": "",
+          "local.resetExpires": "",
+        }
+      })
+
+
+
+
+      response.json({
+        success: true,
+      })
+
+    } else {
+      response.json({
+        success: false,
+      })
+    }
+  } catch (e) {
+    console.log(e)
+    response.json({
+      success: false,
+    })
+  }
+})
+
+userRoutes.get('/users/:id/resetpwd', async (request, response) => {
+  try {
+    const {
+      id
+    } = request.params
+    const user = await User.findById(id)
+    if (user) {
+      const now = (new Date()).getTime();
+      // update verification flag in DB
+      await User.findOneAndUpdate({
+        _id: id
+      }, {
+        $set: {
+          "local.passwordResetCode": createRandomBase64String(),
+          "local.resetExpires": now + PASSWORD_RESET_EXPIRY_TIME
+        }
+      })
+      //send email here
+
+      response.json({
+        success: true
+      })
+    } else {
+      response.json({
+        success: false,
+      })
+    }
+  } catch (e) {
+    console.log(e)
+    response.json({
+      success: false,
+    })
+  }
+})
 
 /**
  * verifies user after account creation
@@ -55,7 +149,7 @@ userRoutes.get('/users/:id/verify', async (request, response) => {
 
     if (isVerificationComplete()) {
       response.json({
-        success:true
+        success: true
       })
 
       // update verification flag in DB
@@ -65,9 +159,7 @@ userRoutes.get('/users/:id/verify', async (request, response) => {
         isVerified: true
       }, )
 
-    }
-
-    else {
+    } else {
       response.json({
         success: false
       })
