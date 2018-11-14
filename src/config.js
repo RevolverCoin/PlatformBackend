@@ -1,3 +1,13 @@
+const path = require('path')
+const dotenv = require('dotenv-safe')
+
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.load({
+      path: path.join(__dirname, '../.env'),
+      sample: path.join(__dirname, '../.env.example'),
+  })
+}
+
 const config = {
   PORT: process.env.PORT || 5445,
   COREURL: process.env.COREURL || 'http://localhost:5447',
