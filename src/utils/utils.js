@@ -9,6 +9,10 @@ function createSuccessResponse(data) {
   }
 }
 
+function checkHasNextPage(page, count, pageSize) {
+  return page < Math.ceil(count / pageSize)
+}
+
 
 function createErrorResponse(error) {
   return {
@@ -77,5 +81,6 @@ module.exports = {
   isLoggedIn,
   cleanObject,
   preparePosts,
-  prepareUsers
+  prepareUsers,
+  checkHasNextPage
 }
