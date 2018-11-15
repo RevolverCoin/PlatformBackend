@@ -1,12 +1,10 @@
 const path = require('path')
 const dotenv = require('dotenv-safe')
 
-if (process.env.NODE_ENV !== 'production') {
-  dotenv.load({
-      path: path.join(__dirname, '../.env'),
-      sample: path.join(__dirname, '../.env.example'),
-  })
-}
+dotenv.load({
+  path: path.join(__dirname, '../.env'),
+  sample: path.join(__dirname, '../.env.example'),
+})
 
 const config = {
   PORT: process.env.PORT || 5445,
@@ -14,6 +12,15 @@ const config = {
   REDIS_SECRET: 'very-sTrong-Secret',
   REDIS_URL: process.env.REDIS_URL || 'redis://localhost:6379',
   MONGO_URL: process.env.MONGO_URL || 'mongodb://localhost/platform-backend',
+  HOME_URL: process.env.HOME_URL || 'http://localhost:5445',
+  FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3000',
+  PASSWORD_RESET_EXPIRY_TIME: 1000 * 60 * 30, // 30 min
+  mailer: {
+    clientId: process.env.MAILER_CLIENT_ID,
+    clientSecret: process.env.MAILER_CLIENT_SECRET,
+    refreshToken: process.env.MAILER_REFRESH_TOKEN,
+    senderAddress: process.env.MAILER_SENDER_ADDRESS,
+  },
   auth: {
 
     'facebookAuth': {
