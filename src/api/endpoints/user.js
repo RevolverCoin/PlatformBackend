@@ -11,6 +11,10 @@ const {
 } = require('../../utils/utils')
 
 const {
+  sendPasswordChangeEmail
+} = require('../../core/mailer')
+
+const {
   PASSWORD_RESET_EXPIRY_TIME
 } = require('../../config')
 
@@ -61,9 +65,6 @@ userRoutes.post('/setpwd', async (request, response) => {
         }
       })
 
-
-
-
       response.json({
         success: true,
       })
@@ -88,17 +89,19 @@ userRoutes.get('/users/:id/resetpwd', async (request, response) => {
     } = request.params
     const user = await User.findById(id)
     if (user) {
-      const now = (new Date()).getTime();
+      const now = (new Date()).getTime()
+      const verificationCode = createRandomBase64String()
       // update verification flag in DB
       await User.findOneAndUpdate({
         _id: id
       }, {
         $set: {
-          "local.passwordResetCode": createRandomBase64String(),
+          "local.passwordResetCode": verificationCode,
           "local.resetExpires": now + PASSWORD_RESET_EXPIRY_TIME
         }
       })
-      //send email here
+      //send email
+      sendPasswordChangeEmail(verificationCode, user.local.email)
 
       response.json({
         success: true
