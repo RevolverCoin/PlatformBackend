@@ -22,7 +22,7 @@ function sendMail(to, subject, text) {
   return transporter.sendMail({
     from: mailer.senderAddress,
     to,
-    subject: 'Message',
+    subject,
     text,
     auth: {
       user: mailer.senderAddress,
@@ -34,12 +34,12 @@ function sendMail(to, subject, text) {
 
 
 function sendPasswordChangeEmail(code, to) {
-  const url = `${FRONTEND_URL}\\changepassword?code=${code}`
+  const url = `${FRONTEND_URL}//changepassword?code=${encodeURIComponent(code)}`
   return sendMail(to, 'Password reset for your Revolver reward platform account', url)
 }
 
-function sendVerificationEmail(code, to) {
-  const url = `${HOME_URL}\\verify?code=${code}`
+function sendVerificationEmail(code, userId, to) {
+  const url = `${HOME_URL}/users/${userId}/verify?code=${encodeURIComponent(code)}`
   return sendMail(to, 'Verify your Revolver reward platform account', url)
 }
 
