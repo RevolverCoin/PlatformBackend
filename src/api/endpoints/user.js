@@ -75,18 +75,22 @@ userRoutes.post('/setpwd', async (request, response) => {
   }
 })
 
-userRoutes.get('/users/:id/resetpwd', async (request, response) => {
+userRoutes.post('/resetpwd', async (request, response) => {
   try {
     const {
-      id
-    } = request.params
-    const user = await User.findById(id)
+      email
+    } = request.body
+
+    const [user] = await User.find({
+      "local.email": email
+    })
+
     if (user) {
       const now = (new Date()).getTime()
       const verificationCode = createRandomBase64String()
       // update verification flag in DB
       await User.findOneAndUpdate({
-        _id: id
+        _id: user._id
       }, {
         $set: {
           "local.passwordResetCode": verificationCode,
@@ -94,6 +98,7 @@ userRoutes.get('/users/:id/resetpwd', async (request, response) => {
         }
       })
       //send email
+      console.log(user, user.local)
       sendPasswordChangeEmail(verificationCode, user.local.email)
 
       response.json({
