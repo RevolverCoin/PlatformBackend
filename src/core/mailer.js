@@ -18,12 +18,13 @@ const transporter = nodemailer.createTransport({
 });
 
 
-function sendMail(to, subject, text) {
+function sendMail({to, subject, text, html}) {
   return transporter.sendMail({
     from: mailer.senderAddress,
     to,
     subject,
     text,
+    html,
     auth: {
       user: mailer.senderAddress,
       refreshToken: mailer.refreshToken,
@@ -35,12 +36,26 @@ function sendMail(to, subject, text) {
 
 function sendPasswordChangeEmail(code, to) {
   const url = `${FRONTEND_URL}//changepassword?code=${encodeURIComponent(code)}`
-  return sendMail(to, 'Password reset for your Revolver reward platform account', url)
+  const html = `
+    <p>Hello,</p>
+    <p>Someone has requested to reset password on your Revolver reward platform account.</p>
+    <p>To set new password, please click <a href=${url}>here</a> or copy-paste the following url:</p>
+    <p>${url}</p>
+    <p>If you didn't ask us for help with your password, let us know right away.
+     Reporting it is important because it helps us prevent fraudsters from stealing your information.</p>
+  `
+  return sendMail({to, subject:'Password reset for your Revolver reward platform account', html})
 }
 
 function sendVerificationEmail(code, userId, to) {
   const url = `${HOME_URL}/users/${userId}/verify?code=${encodeURIComponent(code)}`
-  return sendMail(to, 'Verify your Revolver reward platform account', url)
+  const html = `
+    <p>Hello,</p>
+    <p>Please click <a href=${url}>here</a> or copy-paste the following url:</p>
+    <p>${url}</p>
+    <p>to your browser in order to activate your account.</p>
+  `
+  return sendMail({to, subject:'Verify your Revolver reward platform account', html})
 }
 
 module.exports = {
