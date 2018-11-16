@@ -123,12 +123,9 @@ module.exports = function (passport) {
               // generate verification info
               newUser.local.verificationCode = verificationCode
               newUser.isVerified = false
-              newUser.save((err, saved) => {
-                if (err) return done(err)
-
-                sendVerificationEmail(verificationCode, email)
-                return done(null, newUser)
-              })
+              await newUser.save()
+              sendVerificationEmail(verificationCode, email)
+              return done(null, newUser)
             } else {
               // user is logged in and already has a local account. Ignore signup. (You should log out before trying to create a new account, user!)
               return done(null, req.user)
