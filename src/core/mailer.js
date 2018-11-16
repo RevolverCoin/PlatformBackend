@@ -35,7 +35,7 @@ function sendMail({to, subject, text, html}) {
 
 
 function sendPasswordChangeEmail(code, to) {
-  const url = `${FRONTEND_URL}//changepassword?code=${encodeURIComponent(code)}`
+  const url = `${FRONTEND_URL}/changepassword?code=${encodeURIComponent(code)}`
   const html = `
     <p>Hello,</p>
     <p>Someone has requested to reset password on your Revolver reward platform account.</p>
