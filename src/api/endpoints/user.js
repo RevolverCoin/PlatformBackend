@@ -7,7 +7,8 @@ const {
   cleanObject,
   prepareUsers,
   getUserVerificationInfo,
-  createRandomBase64String
+  createRandomBase64String,
+  checkHasNextPage
 } = require('../../utils/utils')
 
 const {
@@ -261,33 +262,62 @@ userRoutes.get('/address/:address', isLoggedIn, async (request, response) => {
 })
 
 userRoutes.get('/profile/search', isLoggedIn, async (request, response) => {
-  const responseData = {
-    success: false,
-  }
-  const {
-    query: searchStringParam
-  } = request.query
+  try {
+    const {
+      query: searchStringParam,
+      pageId: pageIdParam,
+      pageSize: pageSizeParam
+    } = request.query
 
-  const users = await User.find({
-    $or: [{
-        desc: {
-          $regex: searchStringParam,
-          $options: 'i',
+    const pageSize = parseInt(pageSizeParam) || 10
+    const pageId = parseInt(pageIdParam) || 1
+
+    const findConditions = {
+      $or: [{
+          desc: {
+            $regex: searchStringParam,
+            $options: 'i',
+          },
         },
-      },
-      {
-        username: {
-          $regex: searchStringParam,
-          $options: 'i',
+        {
+          username: {
+            $regex: searchStringParam,
+            $options: 'i',
+          },
         },
+      ],
+    }
+
+
+    const users = await User.find(
+      findConditions, {}, {
+        skip: pageSize * (pageId - 1),
+        limit: pageSize,
       }
-    ],
-  })
+    )
 
-  const converted = users.length ? prepareUsers(...users) : undefined
-  responseData.data = converted
-  responseData.success = true
-  response.json(responseData)
+    // calculate total count of docs
+    const count = await User.count(findConditions)
+
+    // calculate next page
+    const hasNextPage = checkHasNextPage(pageId, count, pageSize)
+
+    const converted = users.length ? prepareUsers(...users) : []
+
+    response.json({
+      success: true,
+      data: {
+        users: converted,
+        hasNextPage,
+        nextPageId: hasNextPage ? pageId + 1 : undefined,
+      },
+    })
+
+  } catch (e) {
+    response.json({
+      success: false,
+    })
+  }
 })
 
 /**
@@ -308,7 +338,7 @@ userRoutes.patch('/profile', isLoggedIn, async (request, response) => {
       desc: description,
       avatar,
       website,
-      links
+      links,
     })
 
     const {
@@ -533,16 +563,15 @@ userRoutes.get('/top', isLoggedIn, async (request, response) => {
   }
 
   try {
-
     const data = await getTopSupports()
-    if (data.error && data.error !== 'noError')
-      return response.json(responseData)
+    if (data.error && data.error !== 'noError') return response.json(responseData)
 
     if (!data.data || typeof data.data === 'undefined') {
       return response.json(responseData)
     }
 
     const addresses = data.data.map(item => item.address)
+
     const users = await User.find({
       address: {
         $in: addresses
@@ -556,17 +585,17 @@ userRoutes.get('/top', isLoggedIn, async (request, response) => {
     }, {
       limit: 100,
       lean: true
-    })
+    }, )
 
     const result = users.map(user => {
       const supportCount = data.data.find(item => item.address === user.address).supportCount
-      return ({ ...user,
+      return { ...user,
         supportCount
-      })
+      }
     })
 
     result.sort((user1, user2) => {
-      return (user1.supportCount > user2.supportCount) ? -1 : 1
+      return user1.supportCount > user2.supportCount ? -1 : 1
     })
 
     responseData.success = true
@@ -577,6 +606,5 @@ userRoutes.get('/top', isLoggedIn, async (request, response) => {
     response.json(responseData)
   }
 })
-
 
 module.exports = userRoutes

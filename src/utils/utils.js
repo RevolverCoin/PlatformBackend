@@ -11,11 +11,15 @@ function createSuccessResponse(data) {
   }
 }
 
+function checkHasNextPage(page, count, pageSize) {
+  return page < Math.ceil(count / pageSize)
+}
+
 
 function createErrorResponse(error) {
   return {
     success: false,
-    errors:[error]
+    errors: [error]
   }
 }
 
@@ -34,9 +38,9 @@ function isLoggedIn(req, res, next) {
 function cleanObject(obj) {
   const result = Object.assign(obj)
   for (const propName in result) {
-      if (result[propName] === null || result[propName] === undefined) {
-          delete result[propName];
-      }
+    if (result[propName] === null || result[propName] === undefined) {
+      delete result[propName];
+    }
   }
 
   return result
@@ -44,9 +48,10 @@ function cleanObject(obj) {
 
 function preparePosts(posts) {
   return posts.map(entry => ({
-    id: entry._id,
+    _id: entry._id,
     text: entry.text,
     timestamp: entry.createdAt,
+    likes: entry.likes,
     user: {
       avatar: entry.user.avatar,
       username: entry.user.username,
@@ -72,7 +77,7 @@ function prepareUsers(...users) {
   }))
 }
 
-function getUserVerificationInfo(user){
+function getUserVerificationInfo(user) {
   return user && {
     isVerified: user.isVerified,
     verificationCode: user.local.verificationCode,
@@ -95,6 +100,7 @@ module.exports = {
   cleanObject,
   preparePosts,
   prepareUsers,
+  checkHasNextPage,
   getUserVerificationInfo,
   createRandomBase64String,
 }
