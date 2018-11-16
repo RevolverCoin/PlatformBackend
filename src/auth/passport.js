@@ -92,45 +92,42 @@ module.exports = function (passport) {
       },
       (req, email, password, done) => {
         // asynchronous
-        process.nextTick(() => {
+        process.nextTick(async () => {
           try {
             // Use lower-case e-mails to avoid case-sensitive e-mail matching
             if (email) email = email.toLowerCase()
             // if the user is not already logged in:
             if (!req.user) {
-              User.findOne({
+              const user = await User.findOne({
                 'local.email': email
-              }, async (err, user) => {
-                // if there are any errors, return the error
+              })
+
+              // check to see if theres already a user with that email
+              if (user) {
+                return done(null, false, req.flash('signupMessage', 'That email is already taken.'))
+              }
+
+              // get new address
+              const response = await createAddress('Supporter')
+              if (!response || !(response.error && response.error === 'noError')) {
+                return done(null, false, req.flash('signupMessage', 'Core service API failure'))
+              }
+
+              // create the user
+              const newUser = new User()
+              const verificationCode = createRandomBase64String()
+              newUser.username = req.body.username
+              newUser.address = response.address
+              newUser.local.email = email
+              newUser.local.password = newUser.generateHash(password)
+              // generate verification info
+              newUser.local.verificationCode = verificationCode
+              newUser.isVerified = false
+              newUser.save((err, saved) => {
                 if (err) return done(err)
 
-                // check to see if theres already a user with that email
-                if (user) {
-                  return done(null, false, req.flash('signupMessage', 'That email is already taken.'))
-                }
-
-                // get new address
-                const response = await createAddress('Supporter')
-                if (!response || !(response.error && response.error === 'noError')) {
-                  return done(null, false, req.flash('signupMessage', 'Core service API failure'))
-                }
-
-                // create the user
-                const newUser = new User()
-                const verificationCode = createRandomBase64String()
-                newUser.username = req.body.username
-                newUser.address = response.address
-                newUser.local.email = email
-                newUser.local.password = newUser.generateHash(password)
-                // generate verification info
-                newUser.local.verificationCode = verificationCode
-                newUser.isVerified = false
-                newUser.save((err, saved) => {
-                  if (err) return done(err)
-
-                  sendVerificationEmail(verificationCode, saved._id, email)
-                  return done(null, newUser)
-                })
+                sendVerificationEmail(verificationCode, email)
+                return done(null, newUser)
               })
             } else {
               // user is logged in and already has a local account. Ignore signup. (You should log out before trying to create a new account, user!)
