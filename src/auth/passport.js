@@ -11,6 +11,7 @@ var User = require('../models/user')
 var { auth: configAuth } = require('../config') // use this one for testing
 
 const { createAddress } = require('../core/core')
+const { sendVerificationEmail } = require('../core/mailer')
 
 const { createRandomBase64String } = require('../utils/utils')
 
@@ -98,22 +99,27 @@ module.exports = function(passport) {
                 return done(null, false, req.flash('signupMessage', 'That email is already taken.'))
               } else {
                 // get new address
-                // const response = await createAddress('Supporter')
-                // if (!response || !(response.error && response.error==='noError')) {
-                //     return done(null, false, req.flash('signupMessage', 'Core service API failure'))
-                // }
+                const response = await createAddress('Supporter')
+                if (!response || !(response.error && response.error==='noError')) {
+                    return done(null, false, req.flash('signupMessage', 'Core service API failure'))
+                }
 
                 // create the user
-                var newUser = new User()
+                const newUser = new User()
+                const verificationCode =  createRandomBase64String()
                 newUser.username = req.body.username
-//                newUser.address = response.address
+                newUser.address = response.address
                 newUser.local.email = email
                 newUser.local.password = newUser.generateHash(password)
                 // generate verification info
-                newUser.local.verificationCode = createRandomBase64String()
+                newUser.local.verificationCode = verificationCode
                 newUser.isVerified = false
-                newUser.save(function(err) {
+                newUser.save(function(err, saved) {
                   if (err) return done(err)
+                  console.log(saved._id, email)
+                  sendVerificationEmail(verificationCode, saved._id, email)
+                  .then(console.log.bind(console))
+                  .catch(console.log.bind(console))
 
                   return done(null, newUser)
                 })
