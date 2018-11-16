@@ -35,19 +35,21 @@ const userRoutes = express.Router()
 userRoutes.post('/setpwd', async (request, response) => {
   try {
     const {
-      id,
       code,
       password
     } = request.body
 
-    const user = await User.findById(id)
+    const [user] = await User.find({
+      "local.passwordResetCode": code
+    })
+
     const now = (new Date()).getTime();
     // request hasn't expired and auth code is valid
     if (user && now < user.local.resetExpires && user.local.passwordResetCode === code) {
       // update pwd and nullify reset state
 
       await User.findOneAndUpdate({
-        _id: id
+        _id: user._id
       }, {
         $set: {
           "local.password": user.generateHash(password),
