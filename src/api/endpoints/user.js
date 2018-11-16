@@ -39,7 +39,7 @@ userRoutes.post('/setpwd', async (request, response) => {
       password
     } = request.body
 
-    const [user] = await User.find({
+    const user = await User.findOne({
       "local.passwordResetCode": code
     })
 
@@ -83,7 +83,7 @@ userRoutes.post('/resetpwd', async (request, response) => {
       email
     } = request.body
 
-    const [user] = await User.find({
+    const user = await User.findOne({
       "local.email": email
     })
 
