@@ -122,19 +122,18 @@ userRoutes.post('/resetpwd', async (request, response) => {
 /**
  * verifies user after account creation
  */
-userRoutes.get('/users/:id/verify', async (request, response) => {
+userRoutes.post('/users/verify', async (request, response) => {
   try {
-    const {
-      id
-    } = request.params
     //verification code
     const {
       code
-    } = request.query
+    } = request.body
 
-    const user = await User.findById(id)
+    const user = await User.findOne({
+      "local.verificationCode": code
+    })
 
-    const converted = getUserVerificationInfo(user)
+    const converted = user && getUserVerificationInfo(user)
 
     //checks if user passes verification check
     const isVerificationComplete = () => {
@@ -157,7 +156,7 @@ userRoutes.get('/users/:id/verify', async (request, response) => {
 
       // update verification flag in DB
       await User.findOneAndUpdate({
-        _id: id,
+        _id: user._id,
       }, {
         isVerified: true
       }, )
