@@ -161,9 +161,6 @@ userRoutes.get('/users/:id/verify', async (request, response) => {
       })
 
     }
-
-
-
   } catch (e) {
     console.log(e)
     response.json({
