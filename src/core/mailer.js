@@ -42,13 +42,13 @@ function sendPasswordChangeEmail(code, to) {
     <p>To set new password, please click <a href=${url}>here</a> or copy-paste the following url:</p>
     <p>${url}</p>
     <p>If you didn't ask us for help with your password, let us know right away.
-     Reporting it is important because it helps us prevent fraudsters from stealing your information.</p>
+    Reporting it is important because it helps us prevent fraudsters from stealing your information.</p>
   `
   return sendMail({to, subject:'Password reset for your Revolver reward platform account', html})
 }
 
-function sendVerificationEmail(code, userId, to) {
-  const url = `${HOME_URL}/users/${userId}/verify?code=${encodeURIComponent(code)}`
+function sendVerificationEmail(code, to) {
+  const url = `${FRONTEND_URL}/verify?code=${encodeURIComponent(code)}`
   const html = `
     <p>Hello,</p>
     <p>Please click <a href=${url}>here</a> or copy-paste the following url:</p>
