@@ -116,10 +116,7 @@ module.exports = function(passport) {
                 newUser.isVerified = false
                 newUser.save(function(err, saved) {
                   if (err) return done(err)
-                  console.log(saved._id, email)
-                  sendVerificationEmail(verificationCode, saved._id, email)
-                  .then(console.log.bind(console))
-                  .catch(console.log.bind(console))
+                    sendVerificationEmail(verificationCode, saved._id, email)
 
                   return done(null, newUser)
                 })
