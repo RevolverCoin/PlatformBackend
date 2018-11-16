@@ -45,14 +45,6 @@ userRoutes.post('/setpwd', async (request, response) => {
     // request hasn't expired and auth code is valid
     if (user && now < user.local.resetExpires && user.local.passwordResetCode === code) {
       // update pwd and nullify reset state
-      await User.findOneAndUpdate({
-        _id: id,
-      }, {
-        local: {
-          ...user.local,
-          password: user.generateHash(password)
-        }
-      }, )
 
       await User.findOneAndUpdate({
         _id: id
