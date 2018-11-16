@@ -132,7 +132,7 @@ postRoutes.get('/profile/search', isLoggedIn, async (request, response) => {
     // calculate next page
     const hasNextPage = checkHasNextPage(pageId, count, pageSize)
 
-    const converted = users.length ? prepareUsers(...users) : undefined
+    const converted = users.length ? prepareUsers(...users) : []
     
     response.json({
       success: true,

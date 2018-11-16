@@ -46,7 +46,7 @@ function cleanObject(obj) {
 
 function preparePosts(posts) {
   return posts.map(entry => ({
-    id: entry._id,
+    _id: entry._id,
     text: entry.text,
     timestamp: entry.createdAt,
     likes: entry.likes,

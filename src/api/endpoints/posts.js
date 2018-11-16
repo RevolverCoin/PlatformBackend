@@ -48,7 +48,10 @@ async function fetchPosts(searchParam, pageSize, page) {
     }
   }
 
-  return null
+  return {
+    posts: [],
+    hasNextPage: false
+  }
 }
 
 postRoutes.get('/posts', isLoggedIn, async (request, response) => {
@@ -156,7 +159,7 @@ postRoutes.post('/post/add', isLoggedIn, (request, response) => {
             const [userInfo] = user ? prepareUsers(user) : []
 
             responseData.data = {
-              id: postId,
+              _id: postId,
               timestamp: newPostData.createdAt,
               ...(expanded
                 ? {
