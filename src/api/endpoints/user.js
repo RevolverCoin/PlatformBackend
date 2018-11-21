@@ -8,16 +8,12 @@ const {
   prepareUsers,
   getUserVerificationInfo,
   createRandomBase64String,
-  checkHasNextPage
+  checkHasNextPage,
 } = require('../../utils/utils')
 
-const {
-  sendPasswordChangeEmail
-} = require('../../core/mailer')
+const { sendPasswordChangeEmail } = require('../../core/mailer')
 
-const {
-  PASSWORD_RESET_EXPIRY_TIME
-} = require('../../config')
+const { PASSWORD_RESET_EXPIRY_TIME } = require('../../config')
 
 const {
   createSupport,
@@ -31,39 +27,37 @@ const {
 
 const userRoutes = express.Router()
 
-
 userRoutes.post('/setpwd', async (request, response) => {
   try {
-    const {
-      code,
-      password
-    } = request.body
+    const { code, password } = request.body
 
     const user = await User.findOne({
-      "local.passwordResetCode": code
+      'local.passwordResetCode': code,
     })
 
-    const now = (new Date()).getTime();
+    const now = new Date().getTime()
     // request hasn't expired and auth code is valid
     if (user && now < user.local.resetExpires && user.local.passwordResetCode === code) {
       // update pwd and nullify reset state
 
-      await User.findOneAndUpdate({
-        _id: user._id
-      }, {
-        $set: {
-          "local.password": user.generateHash(password),
+      await User.findOneAndUpdate(
+        {
+          _id: user._id,
         },
-        $unset: {
-          "local.passwordResetCode": "",
-          "local.resetExpires": "",
-        }
-      })
+        {
+          $set: {
+            'local.password': user.generateHash(password),
+          },
+          $unset: {
+            'local.passwordResetCode': '',
+            'local.resetExpires': '',
+          },
+        },
+      )
 
       response.json({
         success: true,
       })
-
     } else {
       response.json({
         success: false,
@@ -79,32 +73,33 @@ userRoutes.post('/setpwd', async (request, response) => {
 
 userRoutes.post('/resetpwd', async (request, response) => {
   try {
-    const {
-      email
-    } = request.body
+    const { email } = request.body
 
     const user = await User.findOne({
-      "local.email": email
+      'local.email': email,
     })
 
     if (user) {
-      const now = (new Date()).getTime()
+      const now = new Date().getTime()
       const verificationCode = createRandomBase64String()
       // update verification flag in DB
-      await User.findOneAndUpdate({
-        _id: user._id
-      }, {
-        $set: {
-          "local.passwordResetCode": verificationCode,
-          "local.resetExpires": now + PASSWORD_RESET_EXPIRY_TIME
-        }
-      })
+      await User.findOneAndUpdate(
+        {
+          _id: user._id,
+        },
+        {
+          $set: {
+            'local.passwordResetCode': verificationCode,
+            'local.resetExpires': now + PASSWORD_RESET_EXPIRY_TIME,
+          },
+        },
+      )
       //send email
       console.log(user, user.local)
       sendPasswordChangeEmail(verificationCode, user.local.email)
 
       response.json({
-        success: true
+        success: true,
       })
     } else {
       response.json({
@@ -125,12 +120,10 @@ userRoutes.post('/resetpwd', async (request, response) => {
 userRoutes.post('/users/verify', async (request, response) => {
   try {
     //verification code
-    const {
-      code
-    } = request.body
+    const { code } = request.body
 
     const user = await User.findOne({
-      "local.verificationCode": code
+      'local.verificationCode': code,
     })
 
     const converted = user && getUserVerificationInfo(user)
@@ -138,10 +131,7 @@ userRoutes.post('/users/verify', async (request, response) => {
     //checks if user passes verification check
     const isVerificationComplete = () => {
       if (converted) {
-        const {
-          verificationCode,
-          isVerified,
-        } = converted
+        const { verificationCode, isVerified } = converted
         // either user is already verified or the code matches with the one in DB
         return isVerified || verificationCode === code
       }
@@ -151,21 +141,22 @@ userRoutes.post('/users/verify', async (request, response) => {
 
     if (isVerificationComplete()) {
       response.json({
-        success: true
+        success: true,
       })
 
       // update verification flag in DB
-      await User.findOneAndUpdate({
-        _id: user._id,
-      }, {
-        isVerified: true
-      }, )
-
+      await User.findOneAndUpdate(
+        {
+          _id: user._id,
+        },
+        {
+          isVerified: true,
+        },
+      )
     } else {
       response.json({
-        success: false
+        success: false,
       })
-
     }
   } catch (e) {
     console.log(e)
@@ -220,9 +211,7 @@ userRoutes.get('/public/users/:id',  async (request, response) => {
  */
 userRoutes.get('/users/:id', isLoggedIn, async (request, response) => {
   try {
-    const {
-      id
-    } = request.params
+    const { id } = request.params
 
     const user = await User.findById(id)
 
@@ -259,9 +248,7 @@ userRoutes.get('/users/:id', isLoggedIn, async (request, response) => {
  */
 userRoutes.get('/address/:address', isLoggedIn, async (request, response) => {
   try {
-    const {
-      address
-    } = request.params
+    const { address } = request.params
 
     const user = await User.findOne({
         address
@@ -295,37 +282,40 @@ userRoutes.get('/address/:address', isLoggedIn, async (request, response) => {
 
 userRoutes.get('/profile/search', isLoggedIn, async (request, response) => {
   try {
-    const {
-      query: searchStringParam,
-      pageId: pageIdParam,
-      pageSize: pageSizeParam
-    } = request.query
+    const { query: searchStringParam, pageId: pageIdParam, pageSize: pageSizeParam } = request.query
 
     const pageSize = parseInt(pageSizeParam) || 10
     const pageId = parseInt(pageIdParam) || 1
 
     const findConditions = {
-      $or: [{
-          desc: {
-            $regex: searchStringParam,
-            $options: 'i',
-          },
-        },
+      $and: [
         {
-          username: {
-            $regex: searchStringParam,
-            $options: 'i',
-          },
+          $or: [
+            {
+              desc: {
+                $regex: searchStringParam,
+                $options: 'i',
+              },
+            },
+            {
+              username: {
+                $regex: searchStringParam,
+                $options: 'i',
+              },
+            },
+          ],
         },
+        { isVerified: true },
       ],
     }
 
-
     const users = await User.find(
-      findConditions, {}, {
+      findConditions,
+      {},
+      {
         skip: pageSize * (pageId - 1),
         limit: pageSize,
-      }
+      },
     )
 
     // calculate total count of docs
@@ -344,7 +334,6 @@ userRoutes.get('/profile/search', isLoggedIn, async (request, response) => {
         nextPageId: hasNextPage ? pageId + 1 : undefined,
       },
     })
-
   } catch (e) {
     response.json({
       success: false,
@@ -357,13 +346,7 @@ userRoutes.get('/profile/search', isLoggedIn, async (request, response) => {
  */
 userRoutes.patch('/profile', isLoggedIn, async (request, response) => {
   try {
-    const {
-      username,
-      description,
-      avatar,
-      website,
-      links
-    } = request.body
+    const { username, description, avatar, website, links } = request.body
 
     const update = cleanObject({
       username,
@@ -373,11 +356,10 @@ userRoutes.patch('/profile', isLoggedIn, async (request, response) => {
       links,
     })
 
-    const {
-      _id: userId
-    } = request.user
+    const { _id: userId } = request.user
 
-    await User.findOneAndUpdate({
+    await User.findOneAndUpdate(
+      {
         _id: userId,
       },
       update,
@@ -456,10 +438,7 @@ userRoutes.post('/support', isLoggedIn, async (request, response) => {
   }
 
   try {
-    const requestData = ({
-      addressFrom,
-      addressTo
-    } = request.body)
+    const requestData = ({ addressFrom, addressTo } = request.body)
     await createSupport(requestData.addressFrom, requestData.addressTo)
 
     responseData.success = true
@@ -479,13 +458,10 @@ userRoutes.delete('/support', isLoggedIn, async (request, response) => {
   }
 
   try {
-    const {
-      addressFrom,
-      addressTo
-    } = request.body
+    const { addressFrom, addressTo } = request.body
     const requestData = {
       addressFrom,
-      addressTo
+      addressTo,
     }
     await deleteSupport(requestData.addressFrom, requestData.addressTo)
 
@@ -600,26 +576,28 @@ userRoutes.get('/top', async (request, response) => {
 
     const addresses = data.data.map(item => item.address)
 
-    const users = await User.find({
-      address: {
-        $in: addresses
-      }
-    }, {
-      _id: 1,
-      desc: 1,
-      username: 1,
-      avatar: 1,
-      address: 1
-    }, {
-      limit: 100,
-      lean: true
-    }, )
+    const users = await User.find(
+      {
+        address: {
+          $in: addresses,
+        },
+      },
+      {
+        _id: 1,
+        desc: 1,
+        username: 1,
+        avatar: 1,
+        address: 1,
+      },
+      {
+        limit: 100,
+        lean: true,
+      },
+    )
 
     const result = users.map(user => {
       const supportCount = data.data.find(item => item.address === user.address).supportCount
-      return { ...user,
-        supportCount
-      }
+      return { ...user, supportCount }
     })
 
     result.sort((user1, user2) => {
