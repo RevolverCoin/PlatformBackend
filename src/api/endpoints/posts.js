@@ -80,7 +80,7 @@ postRoutes.get('/posts', isLoggedIn, async (request, response) => {
 })
 
 postRoutes.get('/posts/search', isLoggedIn, async (request, response) => {
-  
+
   try {
 
     const { pageId: pageIdParam, pageSize: pageSizeParam, query: searchStringParam } = request.query
@@ -91,11 +91,11 @@ postRoutes.get('/posts/search', isLoggedIn, async (request, response) => {
         $options: 'i',
       },
     }
-  
+
     const pageSize = parseInt(pageSizeParam) || 10
     const page = parseInt(pageIdParam) || 1
     const posts = await fetchPosts(searchParam, pageSize, page)
-    
+
     response.json({
       success: true,
       data: posts
@@ -202,6 +202,32 @@ postRoutes.post('/post/add', isLoggedIn, (request, response) => {
 })
 
 postRoutes.get('/post/:postId', isLoggedIn, (request, response) => {
+  const responseData = {
+    success: false,
+    data: {},
+    errors: [],
+  }
+
+  if (request.params.postId) {
+    Post.find({
+      _id: request.params.postId,
+    }).exec((error, documents) => {
+      if (documents && documents.length > 0) {
+        responseData.data = documents[0]
+        responseData.success = true
+      }
+
+      response.json(responseData)
+    })
+  } else {
+    response.json(responseData)
+  }
+})
+
+/*
+  public view post endpoint
+*/
+postRoutes.get('/public/post/:postId',  (request, response) => {
   const responseData = {
     success: false,
     data: {},

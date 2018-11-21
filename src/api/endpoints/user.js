@@ -166,6 +166,46 @@ userRoutes.post('/users/verify', async (request, response) => {
   }
 })
 
+/*
+public view user endpoint
+*/
+userRoutes.get('/public/users/:id',  async (request, response) => {
+  try {
+    const {
+      id
+    } = request.params
+
+    const user = await User.findById(id)
+
+    const [converted] = user ? prepareUsers(user) : []
+
+    // get supporting/supported list for the user
+    const supports = {}
+
+    const address = converted.address
+
+    let result = await getSupporting(address)
+    supports.supporting = result.data.supports
+
+    result = await getSupported(address)
+    supports.supported = result.data.supports
+
+    response.json({
+      success: true,
+      data: {
+        profile: converted,
+        supports,
+      },
+    })
+  } catch (e) {
+    console.log(e)
+    response.json({
+      success: false,
+    })
+  }
+})
+
+
 /**
  * get user profile and support lists
  */
@@ -174,8 +214,7 @@ userRoutes.get('/users/:id', isLoggedIn, async (request, response) => {
     const { id } = request.params
 
     const user = await User.findById(id)
-      .lean()
-      .exec()
+
     const [converted] = user ? prepareUsers(user) : []
 
     // get supporting/supported list for the user
@@ -211,11 +250,9 @@ userRoutes.get('/address/:address', isLoggedIn, async (request, response) => {
   try {
     const { address } = request.params
 
-    const [user] = await User.find({
-      address,
-    })
-      .lean()
-      .exec()
+    const user = await User.findOne({
+        address
+      })
 
     const [converted] = user ? prepareUsers(user) : []
 
@@ -329,8 +366,7 @@ userRoutes.patch('/profile', isLoggedIn, async (request, response) => {
     )
 
     const user = await User.findById(userId)
-      .lean()
-      .exec()
+
     const [converted] = user ? prepareUsers(user) : []
 
     response.json({
@@ -359,8 +395,7 @@ userRoutes.get('/info', isLoggedIn, async (request, response) => {
 
     // get profile info
     const user = await User.findById(userId)
-      .lean()
-      .exec()
+
     const [converted] = user ? prepareUsers(user) : []
 
     // get supporting/supported list for the user
@@ -457,8 +492,7 @@ userRoutes.get('/users/:id/supporting', isLoggedIn, async (request, response) =>
 
     // get profile info
     const user = await User.findById(userId)
-      .lean()
-      .exec()
+
     const [converted] = user ? prepareUsers(user) : []
 
     if (converted === 'undefined') return response.json(responseData)
@@ -500,8 +534,7 @@ userRoutes.get('/users/:id/supported', isLoggedIn, async (request, response) => 
 
     // get profile info
     const user = await User.findById(userId)
-      .lean()
-      .exec()
+
     const [converted] = user ? prepareUsers(user) : []
 
     if (converted === 'undefined') return response.json(responseData)
