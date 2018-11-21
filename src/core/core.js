@@ -2,13 +2,13 @@ const config = require('../config')
 const fetch = require('node-fetch')
 
 
-function createAddress(type) {
+function createAddress(type, internal) {
     return fetch(`${config.COREURL}/address/new`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({type}),
+      body: JSON.stringify({type, internal}),
     }).then(res => res.json())
     
 }

@@ -108,7 +108,7 @@ module.exports = function (passport) {
               }
 
               // get new address
-              const response = await createAddress('Supporter')
+              const response = await createAddress('Supporter', false)
               if (!response || !(response.error && response.error === 'noError')) {
                 return done(null, false, req.flash('signupMessage', 'Core service API failure'))
               }
@@ -131,6 +131,7 @@ module.exports = function (passport) {
               return done(null, req.user)
             }
           } catch (e) {
+            console.log(e)
             return done(e)
           }
         })
