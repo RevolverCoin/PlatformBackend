@@ -585,7 +585,7 @@ userRoutes.get('/users/:id/supported', isLoggedIn, async (request, response) => 
 /**
  * CORE Bridge: GetTopSupports
  */
-userRoutes.get('/top', isLoggedIn, async (request, response) => {
+userRoutes.get('/top', async (request, response) => {
   const responseData = {
     success: false,
   }
