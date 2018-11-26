@@ -10,6 +10,7 @@ var userSchema = mongoose.Schema({
     avatar           : String,
     website          : String,
     isVerified       : Boolean,
+    internal         : Boolean,
     links            : [String],
     local            : {
         email             : String,

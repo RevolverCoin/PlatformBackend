@@ -417,4 +417,29 @@ postRoutes.post('/posts/like', isLoggedIn, async (request, response) => {
   }
 })
 
+/**
+ * DELETE /posts/delete
+ */
+postRoutes.delete('/posts/delete', isLoggedIn, async (request, response) => {
+  try {
+    const userId = request.user._id
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      throw new Error('Invalid user id')
+    }
+
+    const { postId } = request.body
+
+    const post = await Post.findOneAndDelete({_id:postId, userId})
+    if (!post) throw new Error('Post not found')
+
+    response.json({
+      success: true
+    })
+  } catch (e) {
+    console.log(e)
+    response.json({ success: false, message: e.message })
+  }
+})
+
 module.exports = postRoutes

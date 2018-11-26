@@ -73,7 +73,8 @@ function prepareUsers(...users) {
     avatar: entry.avatar,
     username: entry.username,
     website: entry.website,
-    links: entry.links
+    links: entry.links,
+    internal: entry.internal
   }))
 }
 
