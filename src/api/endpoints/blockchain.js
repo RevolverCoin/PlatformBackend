@@ -1,7 +1,7 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const { isLoggedIn, prepareUsers } = require('../../utils/utils')
-const { send, getTransactions, getRewardTransactions, getServiceInfo, claimGenerator, unclaimGenerator } = require('../../core/core')
+const { send, getTransactions, getRewardTransactions, getRewards, getServiceInfo, claimGenerator, unclaimGenerator } = require('../../core/core')
 const User = require('../../models/user')
 
 const blockchainRoutes = express.Router()
@@ -85,12 +85,36 @@ blockchainRoutes.get('/rewardtransactions', isLoggedIn, async (request, response
     if (!address) return response.json(responseData)
 
     const txs = await getRewardTransactions(address)
+    
+
+    // [ { address: 'SIM1EiJNudXjYReCz5NDc1Nokhf1RDsPosmJo',
+    //    linkAddress: 'SIM1FkAKz9BuMAW5JWNpD3MYdKkZdenvr5mNM',
+    //    rewardTotal: 4.050000000000001,
+    //    supporting: true,
+    //    supported: false
+    // } ]
+    const rewardTotal = await getRewards(address)
+
+    const addresses = rewardTotal.data.map(item => item.linkAddress) 
+
+    // parse addresses to users
+    const users = await User.find({
+      'address': { $in: addresses } 
+    }, {_id: 1, username: 1, avatar: 1, address: 1}, {lean: true})
+    
+    const totals = rewardTotal.data.map((item) => ({
+      ...item,
+      ...(users.find(user=>user.address === item.linkAddress))
+    }))
 
     responseData.success = true
-    responseData.data = txs
-
+    responseData.data = {
+      transactions: txs,
+      total: totals
+    }
     response.json(responseData)
   } catch (e) {
+    console.log(e);
     responseData.error=e.toString()
     response.json(responseData)
   }

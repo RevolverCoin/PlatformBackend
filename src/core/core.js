@@ -155,6 +155,18 @@ function getTopSupports()
     })).then(res => res.json()) 
 }
 
+function getRewards(address)
+{
+  return (
+    fetch(`${config.COREURL}/reward/${address}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })).then(res => res.json()) 
+}
+
+
 module.exports = {
   createAddress, 
   createSupport, 
@@ -169,5 +181,6 @@ module.exports = {
   getServiceInfo,
   claimGenerator,
   unclaimGenerator,
-  getTopSupports
+  getTopSupports,
+  getRewards
 };
