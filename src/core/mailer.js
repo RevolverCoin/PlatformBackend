@@ -48,7 +48,7 @@ function sendPasswordChangeEmail(code, to) {
 }
 
 function sendVerificationEmail(code, to) {
-  const url = `${FRONTEND_URL}/verify?code=${encodeURIComponent(code)}`
+  const url = `${FRONTEND_URL}/verifyemail?code=${encodeURIComponent(code)}`
   const html = `
     <p>Hello,</p>
     <p>Please click <a href=${url}>here</a> or copy-paste the following url:</p>
