@@ -19,11 +19,11 @@ const {
 mongoose.connect(MONGO_URL);
 require('./auth/passport')(passport);
 
-const whitelist = ['http://localhost:5450', 'http://46.101.154.157:5450']
+const whitelist = ['http://localhost:5450', 'https://platform.revolvercoin.org']
 var corsOptions = {
   credentials: true,
   origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
+    if (!origin || whitelist.indexOf(origin) !== -1) {
       callback(null, true)
     } else {
       callback(new Error('Not allowed by CORS'))
